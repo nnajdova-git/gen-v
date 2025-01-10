@@ -1,0 +1,30 @@
+# Git
+.git
+.gitignore
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Editor/IDE-specific
+.idea/
+.vscode/
+
+# Python Testing
+.pytest_cache/
+tests/
+test/

@@ -14,6 +14,43 @@ Coming soon...
 
 Coming soon...
 
+## Deployment
+These are the manual steps for deployment.
+
+Run these steps once:
+```
+gcloud init
+
+egcloud services enable \
+    cloudbuild.googleapis.com \
+    run.googleapis.com
+
+gcloud projects add-iam-policy-binding [project-id] \
+  --member="serviceAccount:[project-number]-compute@developer.gserviceaccount.com" \
+  --role="roles/storage.objectAdmin"
+```
+
+Then run this command to build the frontend and backend:
+```
+gcloud builds submit --config deploy/cloudbuild-backend.yaml backend/
+gcloud builds submit --config deploy/cloudbuild-frontend.yaml frontend/ui
+```
+
+And this to deploy the builds to Cloud Run:
+```
+gcloud run deploy gen-v-backend \
+  --image gcr.io/[project-id]/gen-v-backend \
+  --platform managed \
+  --region europe-west2 \
+  --allow-unauthenticated
+
+gcloud run deploy gen-v-frontend \
+  --image gcr.io/[project-id]/gen-v-frontend \
+  --platform managed \
+  --region europe-west2 \
+  --allow-unauthenticated
+```
+
 ## Disclaimer
 __This is not an officially supported Google product.__
 
