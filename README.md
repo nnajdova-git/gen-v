@@ -14,17 +14,6 @@ Coming soon...
 
 Coming soon...
 
-```
-cd src/
-pip install -r requirements.txt
-```
-
-Update the variables at the top of the file to point to your assets.
-
-```
-python main.py
-```
-
 ## Disclaimer
 __This is not an officially supported Google product.__
 
