@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-.veo-generate{
-  form {
-    max-width: 500px;
-  }
+/**
+ * @file defines enums used for Material Design components.
+ */
+
+/**
+ * Represents the different types of snackbar notifications.
+ */
+export enum SnackbarType {
+  SUCCESS = 'success',
+  ERROR = 'error'
 }

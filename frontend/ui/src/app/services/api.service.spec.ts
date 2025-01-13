@@ -21,7 +21,10 @@ import {
 } from '@angular/common/http/testing';
 import {TestBed} from '@angular/core/testing';
 import {environment} from '../../environments/environment';
-import {GenerateVideoResponse} from '../models/api-models';
+import {
+  GenerateVideoRequest,
+  GenerateVideoResponse,
+} from '../models/api-models';
 import {ApiService} from './api.service';
 
 describe('ApiService', () => {
@@ -40,17 +43,18 @@ describe('ApiService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should make a GET request to the correct URL', () => {
+  it('should make a POST request to the correct URL', () => {
+    const mockRequest: GenerateVideoRequest = {prompt: 'test prompt'};
     const mockResponse: GenerateVideoResponse = {
       operation_name: 'test-operation-name',
     };
 
-    service.generateVideo().subscribe((response) => {
+    service.generateVideo(mockRequest).subscribe((response) => {
       expect(response.operation_name).toEqual(mockResponse.operation_name);
     });
 
     const req = httpMock.expectOne(`${environment.backendUrl}/veo/generate`);
-    expect(req.request.method).toBe('GET');
+    expect(req.request.method).toBe('POST');
     req.flush(mockResponse);
   });
 });

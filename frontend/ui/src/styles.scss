@@ -44,3 +44,24 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Roboto', serif;
 }
+
+.full-width {
+  width: 100%;
+}
+
+.content {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+// Material design customisations
+.mat-mdc-snack-bar-container.error {
+  --mat-snack-bar-button-color: #FFF;
+  --mdc-snackbar-container-color: #CC0000;
+  --mdc-snackbar-supporting-text-color: #FFF;
+}
+
+.mat-mdc-snack-bar-container.success {
+  --mat-snack-bar-button-color: #4BB543;
+}

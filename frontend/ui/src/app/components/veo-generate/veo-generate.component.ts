@@ -21,7 +21,22 @@
 
 import {CommonModule} from '@angular/common';
 import {Component} from '@angular/core';
-import {GenerateVideoResponse} from '../../models/api-models';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import {MatButtonModule} from '@angular/material/button';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
+import {
+  GenerateVideoRequest,
+  GenerateVideoResponse,
+} from '../../models/api-models';
+import {SnackbarType} from '../../models/material-design.enums';
 import {ApiService} from '../../services/api.service';
 
 /**
@@ -29,36 +44,78 @@ import {ApiService} from '../../services/api.service';
  */
 @Component({
   selector: 'app-veo-generate',
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule,
+  ],
   templateUrl: './veo-generate.component.html',
   styleUrls: ['./veo-generate.component.scss'],
 })
 export class VeoGenerateComponent {
   /**
-   * The API response containing video generation information.
-   */
-  response: GenerateVideoResponse | undefined;
-  /**
    * Indicates whether a video generation request is in progress.
    */
   isLoading = false;
+  /**
+   * The form group for the video generation form.
+   */
+  form: FormGroup = new FormGroup({
+    prompt: new FormControl('', [Validators.required]),
+  });
 
   /**
    * @param apiService The service for making API requests.
+   * @param snackBar The service for displaying snackbar notifications
    */
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private snackBar: MatSnackBar,
+  ) {}
+
+  /**
+   * Shows Material Design snackbar notification.
+   * @param message The message to display in the snackbar.
+   * @param messageType The type of message to display in the snackbar.
+   * @param duration The duration in milliseconds to display the snackbar.
+   */
+  showSnackbar(
+    message: string,
+    messageType: SnackbarType,
+    duration = 5000,
+  ) {
+    this.snackBar.open(message, 'X', {
+      duration,
+      panelClass: [messageType],
+    });
+  }
 
   /**
    * Sends a request to generate a video.
+   * Displays a snackbar notification with the result.
    */
   generateVideo() {
+    if (this.form.invalid) {
+      return;
+    }
     this.isLoading = true;
-    this.apiService.generateVideo().subscribe({
+    const request: GenerateVideoRequest = this.form.value;
+
+    this.apiService.generateVideo(request).subscribe({
       next: (response: GenerateVideoResponse) => {
-        this.response = response;
+        this.showSnackbar(
+          `Success: ${response.operation_name}`,
+          SnackbarType.Success,
+        );
       },
       error: (error) => {
         console.error('Error fetching data:', error);
+        this.showSnackbar(`Error: ${error.message}`, SnackbarType.Error);
+        this.isLoading = false;
       },
       complete: () => {
         this.isLoading = false;

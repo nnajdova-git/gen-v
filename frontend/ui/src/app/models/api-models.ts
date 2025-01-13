@@ -21,6 +21,16 @@
  */
 
 /**
+ * Represents a request to the Veo video generation API.
+ */
+export interface GenerateVideoRequest {
+  /**
+   * The prompt to provide to Veo.
+   */
+  prompt: string;
+}
+
+/**
  * Represents the response from the Veo video generation API.
  */
 export interface GenerateVideoResponse {
