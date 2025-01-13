@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
-import {ApplicationConfig, provideZoneChangeDetection} from '@angular/core';
-import {provideRouter} from '@angular/router';
-
-import {routes} from './app.routes';
-
 /**
- * Application configuration.
- *
- * Provides global configuration for the Angular application.
+ * Environment configuration for development.
  */
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideZoneChangeDetection({eventCoalescing: true}),
-    provideRouter(routes),
-    provideHttpClient(withInterceptorsFromDi()),
-  ],
+export const environment = {
+  /**
+   * Whether the application is running in production mode.
+   */
+  production: false,
+  /**
+   * The base URL for the backend API.
+   */
+  backendUrl: 'http://localhost:8080',
 };

@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 steps:
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        sed -i 's|{{BACKEND_URL}}|'"$_BACKEND_URL"'|g' src/environments/environment.prod.ts
   - name: 'gcr.io/cloud-builders/docker'
     args: [
             'build',

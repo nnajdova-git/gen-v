@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
-import {ApplicationConfig, provideZoneChangeDetection} from '@angular/core';
-import {provideRouter} from '@angular/router';
-
-import {routes} from './app.routes';
+/**
+ * @file Defines the data models used for interacting with the backend API.
+ * It includes interfaces that represent the structure of requests and responses
+ * exchanged between the Angular application and the API endpoints.
+ */
 
 /**
- * Application configuration.
- *
- * Provides global configuration for the Angular application.
+ * Represents the response from the Veo video generation API.
  */
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideZoneChangeDetection({eventCoalescing: true}),
-    provideRouter(routes),
-    provideHttpClient(withInterceptorsFromDi()),
-  ],
-};
+export interface GenerateVideoResponse {
+  /**
+   * The name of the operation used to track the video generation process.
+   */
+  operation_name: string;
+}

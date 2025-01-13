@@ -12,9 +12,21 @@ Coming soon...
 
 ## Local Development
 
-Coming soon...
+These are the steps to run the application locally for development:
 
-## Deployment
+1.  **Start the Backend:**
+
+    *   See instructions in the [backend README](./backend/README.md).
+    *   The backend will typically be available at `http://localhost:8080`.
+
+2.  **Start the Frontend:**
+
+    *   See instructions in the [frontend/ui README](./frontend/ui/README.md).
+    *   The frontend will typically be available at `http://localhost:4200` and
+        will proxy API requests to the backend.
+
+## Production Deployment
+
 These are the manual steps for deployment.
 
 Run these steps once:
@@ -30,19 +42,27 @@ gcloud projects add-iam-policy-binding [project-id] \
   --role="roles/storage.objectAdmin"
 ```
 
-Then run this command to build the frontend and backend:
+Run these commands to build & deploy the backend:
 ```
 gcloud builds submit --config deploy/cloudbuild-backend.yaml backend/
-gcloud builds submit --config deploy/cloudbuild-frontend.yaml frontend/ui
-```
 
-And this to deploy the builds to Cloud Run:
-```
 gcloud run deploy gen-v-backend \
   --image gcr.io/[project-id]/gen-v-backend \
   --platform managed \
   --region europe-west2 \
   --allow-unauthenticated
+```
+
+Run these commands to build & deploy the frontend:
+
+Note: Update the backend URL to the cloud run deployment from above without a
+`/` on the end.
+
+```
+gcloud builds submit \
+  --config deploy/cloudbuild-frontend.yaml \
+  --substitutions _BACKEND_URL="[https://backendurl.run.app]" \
+ frontend/ui
 
 gcloud run deploy gen-v-frontend \
   --image gcr.io/[project-id]/gen-v-frontend \

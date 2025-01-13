@@ -15,6 +15,7 @@
  */
 
 import {Routes} from '@angular/router';
+import {VeoGenerateComponent} from './components/veo-generate/veo-generate.component';
 
 /**
  * The application's routing configuration.
@@ -22,4 +23,4 @@ import {Routes} from '@angular/router';
  * This array defines the routes for the Gen V application, mapping URL paths
  * to specific components.
  */
-export const routes: Routes = [];
+export const routes: Routes = [{path: '', component: VeoGenerateComponent}];
