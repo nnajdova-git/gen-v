@@ -62,7 +62,7 @@ describe('VeoGenerateComponent', () => {
     expect(apiServiceSpy.generateVideo).toHaveBeenCalledWith(mockRequest);
     expect(component.showSnackbar).toHaveBeenCalledWith(
       jasmine.any(String),
-      SnackbarType.Success,
+      SnackbarType.SUCCESS,
     );
     expect(component.isLoading).toBeFalse();
   });
@@ -80,7 +80,7 @@ describe('VeoGenerateComponent', () => {
     expect(apiServiceSpy.generateVideo).toHaveBeenCalledWith(mockRequest);
     expect(component.showSnackbar).toHaveBeenCalledWith(
       jasmine.any(String),
-      SnackbarType.Error,
+      SnackbarType.ERROR,
     );
     expect(component.isLoading).toBeFalse();
   });

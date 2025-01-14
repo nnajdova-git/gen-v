@@ -109,12 +109,12 @@ export class VeoGenerateComponent {
       next: (response: GenerateVideoResponse) => {
         this.showSnackbar(
           `Success: ${response.operation_name}`,
-          SnackbarType.Success,
+          SnackbarType.SUCCESS,
         );
       },
       error: (error) => {
         console.error('Error fetching data:', error);
-        this.showSnackbar(`Error: ${error.message}`, SnackbarType.Error);
+        this.showSnackbar(`Error: ${error.message}`, SnackbarType.ERROR);
         this.isLoading = false;
       },
       complete: () => {
