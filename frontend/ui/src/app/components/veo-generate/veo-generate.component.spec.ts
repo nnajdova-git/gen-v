@@ -15,8 +15,13 @@
  */
 
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {of} from 'rxjs';
-import {GenerateVideoResponse} from '../../models/api-models';
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {of, throwError} from 'rxjs';
+import {
+  GenerateVideoRequest,
+  GenerateVideoResponse,
+} from '../../models/api-models';
+import {SnackbarType} from '../../models/material-design.enums';
 import {ApiService} from '../../services/api.service';
 import {VeoGenerateComponent} from './veo-generate.component';
 
@@ -29,7 +34,7 @@ describe('VeoGenerateComponent', () => {
     apiServiceSpy = jasmine.createSpyObj('ApiService', ['generateVideo']);
 
     await TestBed.configureTestingModule({
-      imports: [VeoGenerateComponent],
+      imports: [VeoGenerateComponent, NoopAnimationsModule],
       providers: [{provide: ApiService, useValue: apiServiceSpy}],
     }).compileComponents();
 
@@ -42,16 +47,48 @@ describe('VeoGenerateComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should call generateVideo and set response', () => {
+  it('should call generateVideo and handle success', () => {
+    const mockRequest: GenerateVideoRequest = {prompt: 'test prompt'};
     const mockResponse: GenerateVideoResponse = {
       operation_name: 'test-operation-name',
     };
     apiServiceSpy.generateVideo.and.returnValue(of(mockResponse));
 
+    spyOn(component, 'showSnackbar');
+
+    component.form.setValue({prompt: mockRequest.prompt});
     component.generateVideo();
 
-    expect(apiServiceSpy.generateVideo).toHaveBeenCalled();
-    expect(component.response).toEqual(mockResponse);
+    expect(apiServiceSpy.generateVideo).toHaveBeenCalledWith(mockRequest);
+    expect(component.showSnackbar).toHaveBeenCalledWith(
+      jasmine.any(String),
+      SnackbarType.Success,
+    );
     expect(component.isLoading).toBeFalse();
+  });
+
+  it('should call generateVideo and handle error', () => {
+    const mockRequest: GenerateVideoRequest = {prompt: 'test prompt'};
+    const mockError = new Error('test error');
+    apiServiceSpy.generateVideo.and.returnValue(throwError(() => mockError));
+
+    spyOn(component, 'showSnackbar');
+
+    component.form.setValue({prompt: mockRequest.prompt});
+    component.generateVideo();
+
+    expect(apiServiceSpy.generateVideo).toHaveBeenCalledWith(mockRequest);
+    expect(component.showSnackbar).toHaveBeenCalledWith(
+      jasmine.any(String),
+      SnackbarType.Error,
+    );
+    expect(component.isLoading).toBeFalse();
+  });
+
+  it('should display loading spinner while loading', () => {
+    component.isLoading = true;
+    fixture.detectChanges();
+    const spinner = fixture.nativeElement.querySelector('mat-spinner');
+    expect(spinner).toBeTruthy();
   });
 });

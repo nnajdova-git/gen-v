@@ -10,11 +10,19 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<button (click)="generateVideo()" [disabled]="isLoading">
-  <span *ngIf="isLoading">Loading...</span>
-  <span *ngIf="!isLoading">Generate Video</span>
-</button>
+<div class="veo-generate">
+  <form [formGroup]="form" (ngSubmit)="generateVideo()">
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Prompt</mat-label>
+      <textarea matInput placeholder="Enter your prompt" formControlName="prompt">></textarea>
+      <mat-error *ngIf="form.get('prompt')?.hasError('required')">
+        Prompt is required
+      </mat-error>
+    </mat-form-field>
 
-<div *ngIf="response">
-  <p>Operation Name: {{ response.operation_name }}</p>
+    <button mat-raised-button color="primary" type="submit" [disabled]="isLoading">
+      <span *ngIf="!isLoading">Generate Video</span>
+      <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+    </button>
+  </form>
 </div>

@@ -25,7 +25,10 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {environment} from '../../environments/environment';
-import {GenerateVideoResponse} from '../models/api-models';
+import {
+  GenerateVideoRequest,
+  GenerateVideoResponse,
+} from '../models/api-models';
 
 /**
  * A service that handles API requests to the backend.
@@ -47,10 +50,14 @@ export class ApiService {
   /**
    * Sends a request to generate a video via Veo.
    *
+   * @param request The generate video request for the API, including
+   *  information like the prompt.
    * @return An Observable that emits the API response.
    */
-  generateVideo(): Observable<GenerateVideoResponse> {
+  generateVideo(
+    request: GenerateVideoRequest,
+  ): Observable<GenerateVideoResponse> {
     const apiUrl = `${this.baseUrl}/veo/generate`;
-    return this.http.get<GenerateVideoResponse>(apiUrl);
+    return this.http.post<GenerateVideoResponse>(apiUrl, request);
   }
 }
