@@ -11,7 +11,7 @@ app.
 
 To run the development server run:
 ```
-pip install -r requirements_dev.txt
+pip install --require-hashes -r requirements_dev.txt
 python main.py
 ```
 
