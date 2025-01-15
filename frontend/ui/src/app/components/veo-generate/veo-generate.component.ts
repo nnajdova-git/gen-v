@@ -29,6 +29,7 @@ import {
 } from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
@@ -48,6 +49,7 @@ import {ApiService} from '../../services/api.service';
     CommonModule,
     ReactiveFormsModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
     MatButtonModule,
     MatProgressSpinnerModule,
@@ -66,7 +68,13 @@ export class VeoGenerateComponent {
    */
   form: FormGroup = new FormGroup({
     prompt: new FormControl('', [Validators.required]),
+    image: new FormControl(undefined),
+    file: new FormControl(undefined),
   });
+  /**
+   * The image uploaded by the user. This is used to show a preview in the UI.
+   */
+  image: string | undefined = undefined;
 
   /**
    * @param apiService The service for making API requests.
@@ -83,15 +91,37 @@ export class VeoGenerateComponent {
    * @param messageType The type of message to display in the snackbar.
    * @param duration The duration in milliseconds to display the snackbar.
    */
-  showSnackbar(
-    message: string,
-    messageType: SnackbarType,
-    duration = 5000,
-  ) {
+  showSnackbar(message: string, messageType: SnackbarType, duration = 5000) {
     this.snackBar.open(message, 'X', {
       duration,
       panelClass: [messageType],
     });
+  }
+
+  /**
+   * Handles the file selection event.
+   * @param event The event object.
+   */
+  onFileSelected(event: Event) {
+    const inputElement = event.target as HTMLInputElement;
+    const file: File | null = inputElement.files?.[0] || null;
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e:  ProgressEvent<FileReader>) => {
+        this.image = e.target?.result as string;
+        this.form.patchValue({image: this.image});
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  /**
+   * Clears the image uploaded by the user from the form.
+   */
+  clearImage() {
+    this.image = undefined;
+    this.form.patchValue({image: undefined});
+    this.form.get('file')?.setValue(undefined);
   }
 
   /**
@@ -103,7 +133,10 @@ export class VeoGenerateComponent {
       return;
     }
     this.isLoading = true;
-    const request: GenerateVideoRequest = this.form.value;
+    const request: GenerateVideoRequest = {
+      prompt: this.form.value.prompt,
+      image: this.form.value.image || undefined,
+    };
 
     this.apiService.generateVideo(request).subscribe({
       next: (response: GenerateVideoResponse) => {

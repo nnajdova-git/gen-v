@@ -28,6 +28,10 @@ export interface GenerateVideoRequest {
    * The prompt to provide to Veo.
    */
   prompt: string;
+  /**
+   * A base64-encoded image to use in the generated video.
+   */
+  image?: string;
 }
 
 /**

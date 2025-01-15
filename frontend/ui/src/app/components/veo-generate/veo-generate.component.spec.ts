@@ -15,6 +15,7 @@
  */
 
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {of, throwError} from 'rxjs';
 import {
@@ -29,8 +30,13 @@ describe('VeoGenerateComponent', () => {
   let component: VeoGenerateComponent;
   let fixture: ComponentFixture<VeoGenerateComponent>;
   let apiServiceSpy: jasmine.SpyObj<ApiService>;
+  let mockRequest: GenerateVideoRequest;
+  let mockResponse: GenerateVideoResponse;
 
   beforeEach(async () => {
+    mockRequest = {prompt: 'test prompt', image: undefined};
+    mockResponse = {operation_name: 'test-operation-name'};
+
     apiServiceSpy = jasmine.createSpyObj('ApiService', ['generateVideo']);
 
     await TestBed.configureTestingModule({
@@ -48,15 +54,11 @@ describe('VeoGenerateComponent', () => {
   });
 
   it('should call generateVideo and handle success', () => {
-    const mockRequest: GenerateVideoRequest = {prompt: 'test prompt'};
-    const mockResponse: GenerateVideoResponse = {
-      operation_name: 'test-operation-name',
-    };
     apiServiceSpy.generateVideo.and.returnValue(of(mockResponse));
 
     spyOn(component, 'showSnackbar');
 
-    component.form.setValue({prompt: mockRequest.prompt});
+    component.form.patchValue({prompt: mockRequest.prompt});
     component.generateVideo();
 
     expect(apiServiceSpy.generateVideo).toHaveBeenCalledWith(mockRequest);
@@ -68,13 +70,12 @@ describe('VeoGenerateComponent', () => {
   });
 
   it('should call generateVideo and handle error', () => {
-    const mockRequest: GenerateVideoRequest = {prompt: 'test prompt'};
     const mockError = new Error('test error');
     apiServiceSpy.generateVideo.and.returnValue(throwError(() => mockError));
 
     spyOn(component, 'showSnackbar');
 
-    component.form.setValue({prompt: mockRequest.prompt});
+    component.form.patchValue({prompt: mockRequest.prompt});
     component.generateVideo();
 
     expect(apiServiceSpy.generateVideo).toHaveBeenCalledWith(mockRequest);
@@ -90,5 +91,86 @@ describe('VeoGenerateComponent', () => {
     fixture.detectChanges();
     const spinner = fixture.nativeElement.querySelector('mat-spinner');
     expect(spinner).toBeTruthy();
+  });
+
+  it('should trigger file selection on upload button click', () => {
+    const uploadButton = fixture.debugElement.query(By.css('button[mat-fab]'));
+    const fileInput = fixture.debugElement.query(
+      By.css('input[type="file"]'),
+    ).nativeElement;
+
+    spyOn(fileInput, 'click');
+    spyOn(component, 'onFileSelected');
+
+    uploadButton.triggerEventHandler('click');
+    expect(fileInput.click).toHaveBeenCalled();
+
+    fileInput.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(component.onFileSelected).toHaveBeenCalled();
+  });
+
+  it('should update form and preview with the base64 encoded image', () => {
+    const mockFile = new File(['(mock image data)'], 'test-image.jpg', {
+      type: 'image/jpeg',
+    });
+    const fileList = new DataTransfer();
+    fileList.items.add(mockFile);
+    const mockEvent = jasmine.createSpyObj('Event', ['preventDefault'], {
+      target: {files: fileList.files},
+    });
+
+    const mockFileReader = jasmine.createSpyObj('FileReader', [
+      'readAsDataURL',
+      'onload',
+    ]);
+    spyOn(window, 'FileReader').and.returnValue(mockFileReader);
+
+    component.onFileSelected(mockEvent);
+    mockFileReader.onload({
+      target: {result: 'data:image/jpeg;base64,(mock image data)'},
+    } as ProgressEvent<FileReader>);
+
+    expect(component.image).toEqual('data:image/jpeg;base64,(mock image data)');
+    expect(component.form.get('image')?.value).toEqual(
+      'data:image/jpeg;base64,(mock image data)',
+    );
+  });
+
+  it('should remove preview and clear image form when removing an image', () => {
+    component.image = 'test-image-data';
+    component.form.get('image')?.setValue('test-image-data');
+    fixture.detectChanges();
+
+    const closeButton = fixture.debugElement.query(By.css('.close-button'));
+    closeButton.triggerEventHandler('click');
+
+    expect(component.image).toBeUndefined();
+    expect(component.form.get('image')?.value).toBeUndefined();
+    expect(component.form.get('file')?.value).toBeUndefined();
+  });
+
+  it('should include prompt and image in API request', () => {
+    mockRequest.image = 'test-image-data';
+    component.image = 'test-image-data';
+
+    apiServiceSpy.generateVideo.and.returnValue(of(mockResponse));
+    component.form.patchValue({
+      prompt: mockRequest.prompt,
+      image: mockRequest.image,
+    });
+
+    component.generateVideo();
+    expect(apiServiceSpy.generateVideo).toHaveBeenCalledWith(mockRequest);
+  });
+
+  it('should disable the image upload button when an image is present', () => {
+    component.image = 'mock-image-data';
+    fixture.detectChanges();
+
+    const button = fixture.debugElement.query(By.css('button[mat-fab]'));
+
+    expect(button.nativeElement.disabled).toBe(true);
   });
 });
