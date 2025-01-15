@@ -20,8 +20,10 @@ class GenerateVideoRequest(pydantic.BaseModel):
 
   Attributes:
     prompt: The prompt to provide to Veo.
+    image: A base64-encoded image to use in the generated video.
   """
   prompt: str
+  image: str | None = None
 
 
 class GenerateVideoResponse(pydantic.BaseModel):
@@ -31,5 +33,4 @@ class GenerateVideoResponse(pydantic.BaseModel):
     operation_name: The name of the operation used to track the video generation
       process.
   """
-
   operation_name: str

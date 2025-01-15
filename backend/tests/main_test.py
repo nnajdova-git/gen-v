@@ -27,7 +27,9 @@ def client_fixture():
 
 def test_veo_generate_video(client):
   request = veo_models.GenerateVideoRequest(prompt='test prompt')
-  response = client.post('/veo/generate', json=request.model_dump())
+  response = client.post(
+      '/veo/generate', json=request.model_dump(exclude_unset=True)
+  )
   assert response.status_code == 200
   assert response.json() == {
       'operation_name': 'projects/PROJECT_ID/operations/OPERATION_ID'
