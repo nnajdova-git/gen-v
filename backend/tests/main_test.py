@@ -12,20 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for main.py."""
+
+from fastapi.testclient import TestClient
 import main
+from models import veo_models
 import pytest
 
 
 @pytest.fixture(name='client')
 def client_fixture():
-  main.app.config['TESTING'] = True
-  with main.app.test_client() as test_client:
+  with TestClient(main.app) as test_client:
     yield test_client
 
 
 def test_veo_generate_video(client):
-  response = client.get('/veo/generate')
+  request = veo_models.GenerateVideoRequest(prompt='test prompt')
+  response = client.post('/veo/generate', json=request.model_dump())
   assert response.status_code == 200
-  assert response.json == {
+  assert response.json() == {
       'operation_name': 'projects/PROJECT_ID/operations/OPERATION_ID'
   }

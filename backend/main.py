@@ -16,28 +16,54 @@
 This file provides the routing for the backend application.
 """
 
+import logging
 import os
-from typing import Any
-import flask
-import flask_cors
+import sys
+
+import fastapi
+from fastapi.middleware import cors
+from models import veo_models
+import uvicorn
 
 
+# Configure logging.
+logging.basicConfig(stream=sys.stdout)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# The host and port to run the application on.
 HOST = os.environ.get('HOST', '0.0.0.0')
-PORT = os.environ.get('PORT', 8080)
-DEBUG = os.environ.get('DEBUG', True)
+PORT = int(os.environ.get('PORT', 8080))
+# The origin to allow CORS requests from.
+ALLOWED_ORIGIN = os.environ.get('ALLOWED_ORIGIN', '*')
+
+app = fastapi.FastAPI()
+app.add_middleware(
+    cors.CORSMiddleware,
+    allow_origins=[ALLOWED_ORIGIN],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 
-app = flask.Flask(__name__)
-flask_cors.CORS(app)
+@app.post('/veo/generate')
+async def veo_generate_video(
+    request: veo_models.GenerateVideoRequest,
+) -> veo_models.GenerateVideoResponse:
+  """Generates a video using Veo and returns the operation name.
 
+  Args:
+    request: The request for generating a video, which includes information
+      about the prompt and the video parameters.
 
-@app.route('/veo/generate', methods=['GET'])
-def veo_generate_video() -> dict[str, Any]:
-  """Generates a video using Veo and returns the operation name."""
+  Returns:
+    The response from the video generation including the operation name.
+  """
   # TODO: b/389066523 - Remove mock logic.
+  logger.info('VeoGenerateRequest: %s', request)
   operation_name = 'projects/PROJECT_ID/operations/OPERATION_ID'
-  return {'operation_name': operation_name}
-
+  return veo_models.GenerateVideoResponse(operation_name=operation_name)
 
 if __name__ == '__main__':
-  app.run(debug=DEBUG, host=HOST, port=int(os.environ.get('PORT', PORT)))
+  uvicorn.run(app, host=HOST, port=PORT)
