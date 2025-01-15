@@ -18,4 +18,40 @@
   form {
     max-width: 500px;
   }
+
+  .image-upload-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+
+    button {
+      margin-right: 10px;
+    }
+
+    .image-preview {
+      position: relative;
+
+      .image-wrapper {
+        width: 55px;
+        height: 55px;
+        overflow: hidden;
+        border-radius: 15px;
+        box-shadow: var(--mat-sys-level3);
+      }
+
+      img {
+        width: auto;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .close-button {
+        position: absolute;
+        top: -15px;
+        right: -25px;
+        z-index: 1;
+        transform: scale(0.5);
+      }
+    }
+  }
 }

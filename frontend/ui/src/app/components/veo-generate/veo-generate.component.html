@@ -12,6 +12,23 @@
 -->
 <div class="veo-generate">
   <form [formGroup]="form" (ngSubmit)="generateVideo()">
+    <div class="image-upload-container">
+      <input type="file" hidden (change)="onFileSelected($event)" #fileUpload formControlName="file"
+        accept="image/*">
+      <button mat-fab (click)="fileUpload.click(); $event.preventDefault()" [disabled]="image">
+        <mat-icon aria-hidden="false" aria-label="Image icon" fontIcon="image"></mat-icon>
+      </button>
+      <div *ngIf="image" class="image-preview">
+        <div class="image-wrapper">
+          <img [src]="image" alt="Image Preview">
+        </div>
+        <button mat-mini-fab color="warn" class="close-button"
+            (click)="clearImage(); $event.preventDefault()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+
     <mat-form-field appearance="fill" class="full-width">
       <mat-label>Prompt</mat-label>
       <textarea matInput placeholder="Enter your prompt" formControlName="prompt">></textarea>
