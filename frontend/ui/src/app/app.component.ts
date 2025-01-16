@@ -16,6 +16,7 @@
 
 import {Component} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
+import {TopbarComponent} from './components/topbar/topbar.component';
 
 /**
  * The root component of the Gen V application.
@@ -24,7 +25,7 @@ import {RouterOutlet} from '@angular/router';
  */
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, TopbarComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })

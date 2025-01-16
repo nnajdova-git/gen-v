@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-import {Routes} from '@angular/router';
-import {HomeComponent} from './components/home/home.component';
+/**
+ * @file the topbar component for the application.
+ */
+
+import {Component} from '@angular/core';
+import {RouterLink, RouterLinkActive} from '@angular/router';
 
 /**
- * The application's routing configuration.
- *
- * This array defines the routes for the Gen V application, mapping URL paths
- * to specific components.
+ * The topbar component.
  */
-export const routes: Routes = [
-  {path: '', component: HomeComponent, pathMatch: 'full'},
-];
+@Component({
+  selector: 'app-topbar',
+  imports: [RouterLink, RouterLinkActive],
+  templateUrl: './topbar.component.html',
+  styleUrl: './topbar.component.scss',
+})
+export class TopbarComponent {}
