@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-import {Routes} from '@angular/router';
-import {HomeComponent} from './components/home/home.component';
+/**
+ * @file The Home page component. This is the main entry point for the app.
+ */
+
+import {Component} from '@angular/core';
+import {VeoGenerateComponent} from '../veo-generate/veo-generate.component';
 
 /**
- * The application's routing configuration.
- *
- * This array defines the routes for the Gen V application, mapping URL paths
- * to specific components.
+ * The main landing page for the app.
  */
-export const routes: Routes = [{path: '', component: HomeComponent}];
+@Component({
+  selector: 'app-home',
+  imports: [VeoGenerateComponent],
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.scss',
+})
+export class HomeComponent {}
