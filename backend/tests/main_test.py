@@ -34,3 +34,25 @@ def test_veo_generate_video(client):
   assert response.json() == {
       'operation_name': 'projects/PROJECT_ID/operations/OPERATION_ID'
   }
+
+
+def test_veo_operation_status(client):
+  request = veo_models.VeoGetOperationStatusRequest(
+      operation_name='projects/PROJECT_ID/operations/OPERATION_ID'
+  )
+  response = client.post(
+      '/veo/operation/status', json=request.model_dump(exclude_unset=True)
+  )
+  assert response.status_code == 200
+  assert response.json() == {
+      'name': 'projects/PROJECT_ID/operations/OPERATION_ID',
+      'done': True,
+      'response': {
+          'generated_samples': [{
+              'video': {
+                  'uri': 'gs://BUCKET_NAME/TIMESTAMPED_FOLDER/sample_0.mp4',
+                  'encoding': 'video/mp4',
+              }
+          }]
+      },
+  }
