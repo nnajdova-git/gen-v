@@ -34,8 +34,8 @@ import {MatInputModule} from '@angular/material/input';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 import {
-  GenerateVideoRequest,
-  GenerateVideoResponse,
+  VeoGenerateVideoRequest,
+  VeoGenerateVideoResponse,
 } from '../../models/api-models';
 import {SnackbarType} from '../../models/material-design.enums';
 import {ApiService} from '../../services/api.service';
@@ -133,13 +133,13 @@ export class VeoGenerateComponent {
       return;
     }
     this.isLoading = true;
-    const request: GenerateVideoRequest = {
+    const request: VeoGenerateVideoRequest = {
       prompt: this.form.value.prompt,
       image: this.form.value.image || undefined,
     };
 
     this.apiService.generateVideo(request).subscribe({
-      next: (response: GenerateVideoResponse) => {
+      next: (response: VeoGenerateVideoResponse) => {
         this.showSnackbar(
           `Success: ${response.operation_name}`,
           SnackbarType.SUCCESS,

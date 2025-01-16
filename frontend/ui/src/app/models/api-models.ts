@@ -23,7 +23,7 @@
 /**
  * Represents a request to the Veo video generation API.
  */
-export interface GenerateVideoRequest {
+export interface VeoGenerateVideoRequest {
   /**
    * The prompt to provide to Veo.
    */
@@ -37,7 +37,7 @@ export interface GenerateVideoRequest {
 /**
  * Represents the response from the Veo video generation API.
  */
-export interface GenerateVideoResponse {
+export interface VeoGenerateVideoResponse {
   /**
    * The name of the operation used to track the video generation process.
    */

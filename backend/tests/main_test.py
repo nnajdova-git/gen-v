@@ -26,7 +26,7 @@ def client_fixture():
 
 
 def test_veo_generate_video(client):
-  request = veo_models.GenerateVideoRequest(prompt='test prompt')
+  request = veo_models.VeoGenerateVideoRequest(prompt='test prompt')
   response = client.post(
       '/veo/generate', json=request.model_dump(exclude_unset=True)
   )

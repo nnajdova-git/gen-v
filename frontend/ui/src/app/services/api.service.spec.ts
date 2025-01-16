@@ -22,8 +22,8 @@ import {
 import {TestBed} from '@angular/core/testing';
 import {environment} from '../../environments/environment';
 import {
-  GenerateVideoRequest,
-  GenerateVideoResponse,
+  VeoGenerateVideoRequest,
+  VeoGenerateVideoResponse,
 } from '../models/api-models';
 import {ApiService} from './api.service';
 
@@ -44,8 +44,8 @@ describe('ApiService', () => {
   });
 
   it('should make a POST request to the correct URL', () => {
-    const mockRequest: GenerateVideoRequest = {prompt: 'test prompt'};
-    const mockResponse: GenerateVideoResponse = {
+    const mockRequest: VeoGenerateVideoRequest = {prompt: 'test prompt'};
+    const mockResponse: VeoGenerateVideoResponse = {
       operation_name: 'test-operation-name',
     };
 

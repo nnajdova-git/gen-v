@@ -26,8 +26,8 @@ import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {environment} from '../../environments/environment';
 import {
-  GenerateVideoRequest,
-  GenerateVideoResponse,
+  VeoGenerateVideoRequest,
+  VeoGenerateVideoResponse,
 } from '../models/api-models';
 
 /**
@@ -55,9 +55,9 @@ export class ApiService {
    * @return An Observable that emits the API response.
    */
   generateVideo(
-    request: GenerateVideoRequest,
-  ): Observable<GenerateVideoResponse> {
+    request: VeoGenerateVideoRequest,
+  ): Observable<VeoGenerateVideoResponse> {
     const apiUrl = `${this.baseUrl}/veo/generate`;
-    return this.http.post<GenerateVideoResponse>(apiUrl, request);
+    return this.http.post<VeoGenerateVideoResponse>(apiUrl, request);
   }
 }

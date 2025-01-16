@@ -15,7 +15,7 @@
 import pydantic
 
 
-class GenerateVideoRequest(pydantic.BaseModel):
+class VeoGenerateVideoRequest(pydantic.BaseModel):
   """Represents a request to the Veo video generation API.
 
   Attributes:
@@ -26,7 +26,7 @@ class GenerateVideoRequest(pydantic.BaseModel):
   image: str | None = None
 
 
-class GenerateVideoResponse(pydantic.BaseModel):
+class VeoGenerateVideoResponse(pydantic.BaseModel):
   """Represents a response from the Veo video generation API.
 
   Attributes:
