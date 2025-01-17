@@ -15,19 +15,19 @@
  */
 
 /**
- * @file The Home page component. This is the main entry point for the app.
+ * @file The hero component. For the hero panel at the top of the page.
  */
 
 import {Component} from '@angular/core';
-import {HeroComponent} from '../hero/hero.component';
+import {VeoGenerateComponent} from '../veo-generate/veo-generate.component';
 
 /**
- * The main landing page for the app.
+ * The hero component.
  */
 @Component({
-  selector: 'app-home',
-  imports: [HeroComponent],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.scss',
+  selector: 'app-hero',
+  imports: [VeoGenerateComponent],
+  templateUrl: './hero.component.html',
+  styleUrl: './hero.component.scss',
 })
-export class HomeComponent {}
+export class HeroComponent {}

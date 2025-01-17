@@ -13,47 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
- .topbar {
+ .hero {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 16px 32px;
-  background-color: #fff;
-  border-bottom: 1px solid #eee;
+  justify-content: space-between;
+  padding: 50px 100px;
 
-  .logo-container {
-    display: flex;
-    align-items: center;
-  }
-
-  .logo {
-    height: 30px;
-    margin-right: 8px;
-  }
-
-  .title {
-    font-size: 20px;
-    font-weight: bold;
-    color: var(--brand-color);
-  }
-
-  nav {
-    display: flex;
-
-    .nav-link {
-      margin-left: 24px;
-      text-decoration: none;
+  .hero-content {
+    h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
       color: var(--primary-color);
+    }
 
-      &:hover {
-        text-decoration: underline;
-        cursor: pointer;
-      }
+    p {
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+  }
 
-      &.active {
-        font-weight: bold;
-      }
+  .hero-image {
+    img {
+      max-width: 400px;
+      height: auto;
     }
   }
 }

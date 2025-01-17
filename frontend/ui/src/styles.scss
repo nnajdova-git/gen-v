@@ -32,6 +32,12 @@ html {
   ));
 }
 
+:root {
+  --primary-color: #015ABB;
+  --primary-font-color: ##595959;
+  --brand-color: #f9bb42;
+}
+
 html, body {
   height: 100%;
 }
@@ -39,6 +45,7 @@ html, body {
 body {
   margin: 0;
   font-family: 'Open Sans', serif;
+  color: var(--primary-font-color);
 }
 
 h1, h2, h3, h4, h5, h6 {
