@@ -65,5 +65,42 @@ async def veo_generate_video(
   operation_name = 'projects/PROJECT_ID/operations/OPERATION_ID'
   return veo_models.VeoGenerateVideoResponse(operation_name=operation_name)
 
+
+@app.post('/veo/operation/status')
+async def veo_operation_status(
+    request: veo_models.VeoGetOperationStatusRequest,
+) -> veo_models.VeoGetOperationStatusResponse:
+  """Checks the status of a video generation operation.
+
+  When you generate a video using Veo, it happens asynchronously, and the
+  operation name is returned. This endpoint checks the status of the operation,
+  and if it is done, returns links to the generated videos.
+
+  Args:
+    request: The request for checking the status of a video generation
+      operation, which includes the operation name.
+
+  Returns:
+    The response from the operation status check, which includes the operation
+    name, whether the operation is done, and if it is done, the generated
+    videos.
+  """
+  # TODO: b/390327877 - Remove mock response.
+  logger.info('VeoGetOperationStatusRequest: %s', request)
+  response = veo_models.VeoGetOperationStatusResponse(**{
+      'name': 'projects/PROJECT_ID/operations/OPERATION_ID',
+      'done': True,
+      'response': {
+          'generated_samples': [{
+              'video': {
+                  'uri': 'gs://BUCKET_NAME/TIMESTAMPED_FOLDER/sample_0.mp4',
+                  'encoding': 'video/mp4',
+              }
+          }]
+      },
+  })
+  return response
+
+
 if __name__ == '__main__':
   uvicorn.run(app, host=HOST, port=PORT)
