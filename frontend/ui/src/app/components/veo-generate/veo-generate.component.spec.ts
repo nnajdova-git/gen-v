@@ -19,8 +19,8 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {of, throwError} from 'rxjs';
 import {
-  GenerateVideoRequest,
-  GenerateVideoResponse,
+  VeoGenerateVideoRequest,
+  VeoGenerateVideoResponse,
 } from '../../models/api-models';
 import {SnackbarType} from '../../models/material-design.enums';
 import {ApiService} from '../../services/api.service';
@@ -30,8 +30,8 @@ describe('VeoGenerateComponent', () => {
   let component: VeoGenerateComponent;
   let fixture: ComponentFixture<VeoGenerateComponent>;
   let apiServiceSpy: jasmine.SpyObj<ApiService>;
-  let mockRequest: GenerateVideoRequest;
-  let mockResponse: GenerateVideoResponse;
+  let mockRequest: VeoGenerateVideoRequest;
+  let mockResponse: VeoGenerateVideoResponse;
 
   beforeEach(async () => {
     mockRequest = {prompt: 'test prompt', image: undefined};

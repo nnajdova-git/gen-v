@@ -49,8 +49,8 @@ app.add_middleware(
 
 @app.post('/veo/generate')
 async def veo_generate_video(
-    request: veo_models.GenerateVideoRequest,
-) -> veo_models.GenerateVideoResponse:
+    request: veo_models.VeoGenerateVideoRequest,
+) -> veo_models.VeoGenerateVideoResponse:
   """Generates a video using Veo and returns the operation name.
 
   Args:
@@ -63,7 +63,7 @@ async def veo_generate_video(
   # TODO: b/389066523 - Remove mock logic.
   logger.info('VeoGenerateRequest: %s', request)
   operation_name = 'projects/PROJECT_ID/operations/OPERATION_ID'
-  return veo_models.GenerateVideoResponse(operation_name=operation_name)
+  return veo_models.VeoGenerateVideoResponse(operation_name=operation_name)
 
 if __name__ == '__main__':
   uvicorn.run(app, host=HOST, port=PORT)
