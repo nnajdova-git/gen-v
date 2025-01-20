@@ -23,7 +23,7 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable, tap} from 'rxjs';
 import {environment} from '../../environments/environment';
 import {
   VeoGenerateVideoRequest,
@@ -45,6 +45,19 @@ export class ApiService {
   private baseUrl = environment.backendUrl;
 
   /**
+   * A BehaviorSubject to store and emit the current veo operation name.
+   * Using BehaviorSubject so that new subscribers will get the last emitted
+   * value.
+   */
+  private veoOperationNameSubject = new BehaviorSubject<string | null>(null);
+
+  /**
+   * An Observable that emits the current veo operation name.
+   * Components can subscribe to this to get updates on the operation name.
+   */
+  veoOperationName$ = this.veoOperationNameSubject.asObservable();
+
+  /**
    * @param http The Angular HTTP client for making API requests.
    */
   constructor(private http: HttpClient) {}
@@ -52,15 +65,25 @@ export class ApiService {
   /**
    * Sends a request to generate a video via Veo.
    *
+   * Clears any previous operation names and stores the new operation name in
+   * `veoOperationName$`.
+   *
    * @param request The generate video request for the API, including
    *  information like the prompt.
    * @return An Observable that emits the API response.
+   *  The response contains the operation name, which is also stored in
+   * `veoOperationName$`.
    */
   generateVideo(
     request: VeoGenerateVideoRequest,
   ): Observable<VeoGenerateVideoResponse> {
+    this.clearVeoOperationName();
     const apiUrl = `${this.baseUrl}/veo/generate`;
-    return this.http.post<VeoGenerateVideoResponse>(apiUrl, request);
+    return this.http.post<VeoGenerateVideoResponse>(apiUrl, request).pipe(
+      tap((response: VeoGenerateVideoResponse) => {
+        this.veoOperationNameSubject.next(response.operation_name);
+      }),
+    );
   }
 
   /**
@@ -78,5 +101,15 @@ export class ApiService {
   ): Observable<VeoGetOperationStatusResponse> {
     const apiUrl = `${this.baseUrl}/veo/operation/status`;
     return this.http.post<VeoGetOperationStatusResponse>(apiUrl, request);
+  }
+
+  /**
+   * Clears the current veo operation name.
+   *
+   * Useful when you want to reset the operation, for example, when starting a
+   * new veo generation job.
+   */
+  clearVeoOperationName() {
+    this.veoOperationNameSubject.next(null);
   }
 }

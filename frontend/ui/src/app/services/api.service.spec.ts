@@ -20,6 +20,7 @@ import {
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import {TestBed} from '@angular/core/testing';
+import {first} from 'rxjs';
 import {environment} from '../../environments/environment';
 import {
   VeoGenerateVideoRequest,
@@ -45,11 +46,15 @@ describe('ApiService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('generateVideo should make a POST request to the correct URL', () => {
+  it('generateVideo should make a POST request to the correct URL and update veoOperationName', () => {
     const mockRequest: VeoGenerateVideoRequest = {prompt: 'test prompt'};
     const mockResponse: VeoGenerateVideoResponse = {
       operation_name: 'test-operation-name',
     };
+
+    service.veoOperationName$.pipe(first()).subscribe((operationName) => {
+      expect(operationName).toBeNull();
+    });
 
     service.generateVideo(mockRequest).subscribe((response) => {
       expect(response.operation_name).toEqual(mockResponse.operation_name);
@@ -58,6 +63,27 @@ describe('ApiService', () => {
     const req = httpMock.expectOne(`${environment.backendUrl}/veo/generate`);
     expect(req.request.method).toBe('POST');
     req.flush(mockResponse);
+
+    service.veoOperationName$.pipe(first()).subscribe((operationName) => {
+      expect(operationName).toEqual(mockResponse.operation_name);
+    });
+  });
+
+  it('generateVideo should clear veoOperationName before making a new request', () => {
+    const mockRequest: VeoGenerateVideoRequest = {prompt: 'test prompt'};
+    const mockResponse: VeoGenerateVideoResponse = {
+      operation_name: 'test-operation-name',
+    };
+
+    const clearSpy = spyOn(service, 'clearVeoOperationName');
+
+    service.generateVideo(mockRequest).subscribe();
+
+    const req = httpMock.expectOne(`${environment.backendUrl}/veo/generate`);
+    expect(req.request.method).toBe('POST');
+    req.flush(mockResponse);
+
+    expect(clearSpy).toHaveBeenCalled();
   });
 
   it('getVeoOperationStatus should make a POST request with correct URL and parameters', () => {
@@ -117,5 +143,15 @@ describe('ApiService', () => {
     );
     expect(req.request.method).toBe('POST');
     req.flush(mockResponse);
+  });
+
+  it('clearVeoOperationName should clear the operation name', () => {
+    service['veoOperationNameSubject'].next('test-operation-name');
+
+    service.clearVeoOperationName();
+
+    service.veoOperationName$.pipe(first()).subscribe((operationName) => {
+      expect(operationName).toBeNull();
+    });
   });
 });
