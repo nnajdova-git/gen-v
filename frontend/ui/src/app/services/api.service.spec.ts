@@ -24,6 +24,8 @@ import {environment} from '../../environments/environment';
 import {
   VeoGenerateVideoRequest,
   VeoGenerateVideoResponse,
+  VeoGetOperationStatusRequest,
+  VeoGetOperationStatusResponse,
 } from '../models/api-models';
 import {ApiService} from './api.service';
 
@@ -43,7 +45,7 @@ describe('ApiService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should make a POST request to the correct URL', () => {
+  it('generateVideo should make a POST request to the correct URL', () => {
     const mockRequest: VeoGenerateVideoRequest = {prompt: 'test prompt'};
     const mockResponse: VeoGenerateVideoResponse = {
       operation_name: 'test-operation-name',
@@ -54,6 +56,65 @@ describe('ApiService', () => {
     });
 
     const req = httpMock.expectOne(`${environment.backendUrl}/veo/generate`);
+    expect(req.request.method).toBe('POST');
+    req.flush(mockResponse);
+  });
+
+  it('getVeoOperationStatus should make a POST request with correct URL and parameters', () => {
+    const mockOperationName = 'projects/PROJECT_ID/operations/OPERATION_ID';
+    const mockRequest: VeoGetOperationStatusRequest = {
+      operation_name: mockOperationName,
+    };
+    const mockResponse: VeoGetOperationStatusResponse = {
+      name: mockOperationName,
+      done: true,
+      response: {
+        generated_samples: [
+          {
+            video: {
+              uri: 'gs://BUCKET_NAME/TIMESTAMPED_FOLDER/sample_0.mp4',
+              encoding: 'video/mp4',
+            },
+          },
+        ],
+      },
+    };
+
+    service.getVeoOperationStatus(mockRequest).subscribe((response) => {
+      expect(response.name).toEqual(mockResponse.name);
+      expect(response.done).toEqual(mockResponse.done);
+      expect(response.response?.generated_samples).toEqual(
+        mockResponse.response?.generated_samples,
+      );
+    });
+
+    const req = httpMock.expectOne(
+      `${environment.backendUrl}/veo/operation/status`,
+    );
+    expect(req.request.method).toBe('POST');
+    req.flush(mockResponse);
+  });
+
+  it('getVeoOperationStatus should handle incomplete operations correctly', () => {
+    const mockOperationName = 'projects/PROJECT_ID/operations/OPERATION_ID';
+    const mockRequest: VeoGetOperationStatusRequest = {
+      operation_name: mockOperationName,
+    };
+    const mockResponse: VeoGetOperationStatusResponse = {
+      name: mockOperationName,
+      done: false,
+      response: null,
+    };
+
+    service.getVeoOperationStatus(mockRequest).subscribe((response) => {
+      expect(response.name).toEqual(mockResponse.name);
+      expect(response.done).toEqual(mockResponse.done);
+      expect(response.response).toBeNull();
+    });
+
+    const req = httpMock.expectOne(
+      `${environment.backendUrl}/veo/operation/status`,
+    );
     expect(req.request.method).toBe('POST');
     req.flush(mockResponse);
   });

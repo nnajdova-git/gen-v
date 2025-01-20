@@ -28,6 +28,8 @@ import {environment} from '../../environments/environment';
 import {
   VeoGenerateVideoRequest,
   VeoGenerateVideoResponse,
+  VeoGetOperationStatusRequest,
+  VeoGetOperationStatusResponse,
 } from '../models/api-models';
 
 /**
@@ -59,5 +61,22 @@ export class ApiService {
   ): Observable<VeoGenerateVideoResponse> {
     const apiUrl = `${this.baseUrl}/veo/generate`;
     return this.http.post<VeoGenerateVideoResponse>(apiUrl, request);
+  }
+
+  /**
+   * Sends a request to get the status of a video generation operation via Veo.
+   *
+   * When you generate a video using Veo, it happens asynchronously, and the
+   * operation name is returned. This endpoint checks the status of the
+   * operation, and if it is done, returns links to the generated videos.
+   *
+   * @param request The request for the API, including the operation name.
+   * @return An Observable that emits the API response.
+   */
+  getVeoOperationStatus(
+    request: VeoGetOperationStatusRequest,
+  ): Observable<VeoGetOperationStatusResponse> {
+    const apiUrl = `${this.baseUrl}/veo/operation/status`;
+    return this.http.post<VeoGetOperationStatusResponse>(apiUrl, request);
   }
 }
