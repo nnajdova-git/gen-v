@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-/**
- * @file The Home page component. This is the main entry point for the app.
- */
+.veo-video-display{
+  .spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+  }
 
-import {Component} from '@angular/core';
-import {HeroComponent} from '../hero/hero.component';
-import {VeoVideoDisplayComponent} from '../veo-video-display/veo-video-display.component';
+  .waiting-message {
+    text-align: center;
+  }
 
-/**
- * The main landing page for the app.
- */
-@Component({
-  selector: 'app-home',
-  imports: [HeroComponent, VeoVideoDisplayComponent],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.scss',
-})
-export class HomeComponent {}
+  video {
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+  }
+}
