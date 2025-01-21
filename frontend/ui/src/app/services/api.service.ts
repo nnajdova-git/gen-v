@@ -23,7 +23,14 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, Observable, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  interval,
+  Observable,
+  switchMap,
+  takeWhile,
+  tap,
+} from 'rxjs';
 import {environment} from '../../environments/environment';
 import {
   VeoGenerateVideoRequest,
@@ -56,6 +63,17 @@ export class ApiService {
    * Components can subscribe to this to get updates on the operation name.
    */
   veoOperationName$ = this.veoOperationNameSubject.asObservable();
+
+  /**
+   * A BehaviorSubject to store and emit the Veo operation status.
+   */
+  private veoOperationStatusSubject =
+    new BehaviorSubject<VeoGetOperationStatusResponse | null>(null);
+
+  /**
+   * An Observable that emits the current Veo operation status.
+   */
+  veoOperationStatus$ = this.veoOperationStatusSubject.asObservable();
 
   /**
    * @param http The Angular HTTP client for making API requests.
@@ -111,5 +129,26 @@ export class ApiService {
    */
   clearVeoOperationName() {
     this.veoOperationNameSubject.next(null);
+  }
+
+  /**
+   * Starts polling for the status of a Veo operation.
+   *
+   * @param operationName The name of the operation to poll.
+   * @param intervalMs The interval in milliseconds at which to poll.
+   * @return An Observable that emits the operation status each time it's
+   *  polled. The Observable completes when the operation is done.
+   */
+  startPollingVeoOperationStatus(
+    operationName: string,
+    intervalMs = 5000,
+  ): Observable<VeoGetOperationStatusResponse> {
+    return interval(intervalMs).pipe(
+      switchMap(() =>
+        this.getVeoOperationStatus({operation_name: operationName}),
+      ),
+      tap((response) => this.veoOperationStatusSubject.next(response)),
+      takeWhile((response) => !response.done, true),
+    );
   }
 }

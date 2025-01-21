@@ -19,8 +19,8 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
-import {TestBed} from '@angular/core/testing';
-import {first} from 'rxjs';
+import {fakeAsync, TestBed, tick} from '@angular/core/testing';
+import {first, of} from 'rxjs';
 import {environment} from '../../environments/environment';
 import {
   VeoGenerateVideoRequest,
@@ -154,4 +154,50 @@ describe('ApiService', () => {
       expect(operationName).toBeNull();
     });
   });
+
+  it('startPollingVeoOperationStatus should poll for operation status and update veoOperationStatus$', fakeAsync(() => {
+    const mockOperationName = 'test-operation-name';
+    const mockResponses: VeoGetOperationStatusResponse[] = [
+      {name: mockOperationName, done: false, response: null},
+      {name: mockOperationName, done: false, response: null},
+      {
+        name: mockOperationName,
+        done: true,
+        response: {
+          generated_samples: [
+            {video: {uri: 'test-uri', encoding: 'video/mp4'}},
+          ],
+        },
+      },
+    ];
+
+    let callCount = 0;
+    spyOn(service, 'getVeoOperationStatus').and.callFake(() => {
+      return of(mockResponses[callCount++]);
+    });
+
+    const statusUpdates: Array<VeoGetOperationStatusResponse | null> = [];
+    service.veoOperationStatus$.subscribe((status) => {
+      statusUpdates.push(status);
+    });
+
+    service.startPollingVeoOperationStatus(mockOperationName, 100).subscribe();
+
+    tick(100);
+    expect(statusUpdates.length).toBe(2);
+    expect(statusUpdates[1]).toEqual(mockResponses[0]);
+
+    tick(100);
+    expect(statusUpdates.length).toBe(3);
+    expect(statusUpdates[2]).toEqual(mockResponses[1]);
+
+    tick(100);
+    expect(statusUpdates.length).toBe(4);
+    expect(statusUpdates[3]).toEqual(mockResponses[2]);
+
+    expect(service.getVeoOperationStatus).toHaveBeenCalledTimes(3);
+
+    tick(100);
+    expect(statusUpdates.length).toBe(4);
+  }));
 });
