@@ -17,12 +17,13 @@ This file provides the routing for the backend application.
 """
 
 import logging
-import os
 import sys
 
 import fastapi
 from fastapi.middleware import cors
+from mocks import veo_mocks
 from models import veo_models
+import settings
 import uvicorn
 
 
@@ -31,16 +32,13 @@ logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-# The host and port to run the application on.
-HOST = os.environ.get('HOST', '0.0.0.0')
-PORT = int(os.environ.get('PORT', 8080))
-# The origin to allow CORS requests from.
-ALLOWED_ORIGIN = os.environ.get('ALLOWED_ORIGIN', '*')
+# Initialise the environment settings.
+env_settings = settings.EnvSettings()
 
 app = fastapi.FastAPI()
 app.add_middleware(
     cors.CORSMiddleware,
-    allow_origins=[ALLOWED_ORIGIN],
+    allow_origins=[env_settings.allowed_origin],
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=['*'],
@@ -56,14 +54,15 @@ async def veo_generate_video(
   Args:
     request: The request for generating a video, which includes information
       about the prompt and the video parameters.
-
   Returns:
     The response from the video generation including the operation name.
   """
-  # TODO: b/389066523 - Remove mock logic.
   logger.info('VeoGenerateRequest: %s', request)
-  operation_name = 'projects/PROJECT_ID/operations/OPERATION_ID'
-  return veo_models.VeoGenerateVideoResponse(operation_name=operation_name)
+  if env_settings.use_mocks:
+    logger.warning('Returning mock VeoGenerateVideoResponse')
+    return veo_mocks.mock_veo_generate_video_response()
+  # TODO: b/389076463 - Add production logic
+  return veo_models.VeoGenerateVideoResponse(operation_name='operation_name')
 
 
 @app.post('/veo/operation/status')
@@ -85,22 +84,18 @@ async def veo_operation_status(
     name, whether the operation is done, and if it is done, the generated
     videos.
   """
-  # TODO: b/390327877 - Remove mock response.
   logger.info('VeoGetOperationStatusRequest: %s', request)
+  if env_settings.use_mocks:
+    logger.warning('Returning mock VeoGetOperationStatusResponse')
+    return veo_mocks.mock_veo_operation_status_response(request)
+  # TODO: b/389076463 - Add production logic
   response = veo_models.VeoGetOperationStatusResponse(**{
       'name': 'projects/PROJECT_ID/operations/OPERATION_ID',
-      'done': True,
-      'response': {
-          'generated_samples': [{
-              'video': {
-                  'uri': 'gs://BUCKET_NAME/TIMESTAMPED_FOLDER/sample_0.mp4',
-                  'encoding': 'video/mp4',
-              }
-          }]
-      },
+      'done': False,
+      'response': None
   })
   return response
 
 
 if __name__ == '__main__':
-  uvicorn.run(app, host=HOST, port=PORT)
+  uvicorn.run(app, host=env_settings.host, port=env_settings.port)

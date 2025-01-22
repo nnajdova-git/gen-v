@@ -12,31 +12,55 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for main.py."""
-
-from fastapi.testclient import TestClient
+from unittest import mock
+from fastapi import testclient
 import main
+from mocks import veo_mocks
 from models import veo_models
 import pytest
+import settings
 
 
 @pytest.fixture(name='client')
 def client_fixture():
-  with TestClient(main.app) as test_client:
+  with testclient.TestClient(main.app) as test_client:
     yield test_client
 
 
-def test_veo_generate_video(client):
+@pytest.fixture(name='patch_env_settings', autouse=True)
+def patch_env_settings(monkeypatch):
+  monkeypatch.setattr(main, 'env_settings', settings.EnvSettings())
+
+
+def test_veo_generate_video_returns_correct_response(client):
   request = veo_models.VeoGenerateVideoRequest(prompt='test prompt')
   response = client.post(
       '/veo/generate', json=request.model_dump(exclude_unset=True)
   )
   assert response.status_code == 200
-  assert response.json() == {
-      'operation_name': 'projects/PROJECT_ID/operations/OPERATION_ID'
-  }
+  assert response.json() == {'operation_name': 'operation_name'}
 
 
-def test_veo_operation_status(client):
+@mock.patch.object(veo_mocks, 'mock_veo_generate_video_response', autospec=True)
+def test_veo_generate_video_returns_mock_response_with_use_mocks_true(
+    mock_veo_generate_response,
+    client
+):
+  main.env_settings.use_mocks = True
+  mock_veo_generate_response.return_value = mock.create_autospec(
+      spec=veo_models.VeoGenerateVideoResponse,
+      instance=True
+  )
+
+  request = veo_models.VeoGenerateVideoRequest(prompt='test prompt')
+  response = client.post(
+      '/veo/generate', json=request.model_dump(exclude_unset=True)
+  )
+  assert response.status_code == 200
+  mock_veo_generate_response.assert_called_once()
+
+
+def test_veo_operation_status_returns_correct_response(client):
   request = veo_models.VeoGetOperationStatusRequest(
       operation_name='projects/PROJECT_ID/operations/OPERATION_ID'
   )
@@ -46,13 +70,29 @@ def test_veo_operation_status(client):
   assert response.status_code == 200
   assert response.json() == {
       'name': 'projects/PROJECT_ID/operations/OPERATION_ID',
-      'done': True,
-      'response': {
-          'generated_samples': [{
-              'video': {
-                  'uri': 'gs://BUCKET_NAME/TIMESTAMPED_FOLDER/sample_0.mp4',
-                  'encoding': 'video/mp4',
-              }
-          }]
-      },
+      'done': False,
+      'response': None,
   }
+
+
+@mock.patch.object(
+    veo_mocks, 'mock_veo_operation_status_response', autospec=True
+)
+def test_veo_operation_status_returns_mock_response_with_use_mocks_true(
+    mock_veo_operation_status_response,
+    client
+):
+  main.env_settings.use_mocks = True
+  mock_veo_operation_status_response.return_value = mock.create_autospec(
+      spec=veo_models.VeoGetOperationStatusResponse,
+      instance=True
+  )
+
+  request = veo_models.VeoGetOperationStatusRequest(
+      operation_name='projects/PROJECT_ID/operations/OPERATION_ID'
+  )
+  response = client.post(
+      '/veo/operation/status', json=request.model_dump(exclude_unset=True)
+  )
+  assert response.status_code == 200
+  mock_veo_operation_status_response.assert_called_once()
