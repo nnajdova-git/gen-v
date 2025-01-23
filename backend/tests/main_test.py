@@ -15,8 +15,8 @@
 from unittest import mock
 from fastapi import testclient
 import main
-from mocks import veo_mocks
-from models import veo_models
+from mocks import api_mocks
+from models import api_models
 import pytest
 import settings
 
@@ -33,7 +33,7 @@ def patch_env_settings(monkeypatch):
 
 
 def test_veo_generate_video_returns_correct_response(client):
-  request = veo_models.VeoGenerateVideoRequest(prompt='test prompt')
+  request = api_models.VeoGenerateVideoRequest(prompt='test prompt')
   response = client.post(
       '/veo/generate', json=request.model_dump(exclude_unset=True)
   )
@@ -41,18 +41,18 @@ def test_veo_generate_video_returns_correct_response(client):
   assert response.json() == {'operation_name': 'operation_name'}
 
 
-@mock.patch.object(veo_mocks, 'mock_veo_generate_video_response', autospec=True)
+@mock.patch.object(api_mocks, 'mock_veo_generate_video_response', autospec=True)
 def test_veo_generate_video_returns_mock_response_with_use_mocks_true(
     mock_veo_generate_response,
     client
 ):
   main.env_settings.use_mocks = True
   mock_veo_generate_response.return_value = mock.create_autospec(
-      spec=veo_models.VeoGenerateVideoResponse,
+      spec=api_models.VeoGenerateVideoResponse,
       instance=True
   )
 
-  request = veo_models.VeoGenerateVideoRequest(prompt='test prompt')
+  request = api_models.VeoGenerateVideoRequest(prompt='test prompt')
   response = client.post(
       '/veo/generate', json=request.model_dump(exclude_unset=True)
   )
@@ -61,7 +61,7 @@ def test_veo_generate_video_returns_mock_response_with_use_mocks_true(
 
 
 def test_veo_operation_status_returns_correct_response(client):
-  request = veo_models.VeoGetOperationStatusRequest(
+  request = api_models.VeoGetOperationStatusRequest(
       operation_name='projects/PROJECT_ID/operations/OPERATION_ID'
   )
   response = client.post(
@@ -76,7 +76,7 @@ def test_veo_operation_status_returns_correct_response(client):
 
 
 @mock.patch.object(
-    veo_mocks, 'mock_veo_operation_status_response', autospec=True
+    api_mocks, 'mock_veo_operation_status_response', autospec=True
 )
 def test_veo_operation_status_returns_mock_response_with_use_mocks_true(
     mock_veo_operation_status_response,
@@ -84,11 +84,11 @@ def test_veo_operation_status_returns_mock_response_with_use_mocks_true(
 ):
   main.env_settings.use_mocks = True
   mock_veo_operation_status_response.return_value = mock.create_autospec(
-      spec=veo_models.VeoGetOperationStatusResponse,
+      spec=api_models.VeoGetOperationStatusResponse,
       instance=True
   )
 
-  request = veo_models.VeoGetOperationStatusRequest(
+  request = api_models.VeoGetOperationStatusRequest(
       operation_name='projects/PROJECT_ID/operations/OPERATION_ID'
   )
   response = client.post(

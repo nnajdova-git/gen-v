@@ -11,29 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for veo_mocks.py."""
+"""Unit tests for api_mocks.py."""
 
-from mocks import veo_mocks
-from models import veo_models
+from mocks import api_mocks
+from models import api_models
 import pytest
 
 
 @pytest.fixture(name='operation_status_request')
 def operation_status_request_fixture():
-  return veo_models.VeoGetOperationStatusRequest(
+  return api_models.VeoGetOperationStatusRequest(
       operation_name='projects/PROJECT_ID/operations/TEST_OPERATION_ID'
   )
 
 
 def test_mock_veo_generate_video_response():
-  response = veo_mocks.mock_veo_generate_video_response()
+  response = api_mocks.mock_veo_generate_video_response()
   assert (
       response.operation_name == 'projects/PROJECT_ID/operations/OPERATION_ID'
   )
 
 
 def test_default_mock_veo_operation_status_response(operation_status_request):
-  response = veo_mocks.mock_veo_operation_status_response(
+  response = api_mocks.mock_veo_operation_status_response(
       operation_status_request
   )
 
@@ -47,7 +47,7 @@ def test_mock_veo_operation_status_response_custom_videos(
     operation_status_request,
 ):
   num_videos = 2
-  response = veo_mocks.mock_veo_operation_status_response(
+  response = api_mocks.mock_veo_operation_status_response(
       operation_status_request, num_of_videos=num_videos
   )
 
@@ -59,7 +59,7 @@ def test_mock_veo_operation_status_response_custom_bucket_name(
     operation_status_request,
 ):
   custom_bucket_name = 'my-custom-bucket'
-  response = veo_mocks.mock_veo_operation_status_response(
+  response = api_mocks.mock_veo_operation_status_response(
       operation_status_request, gcs_bucket_name=custom_bucket_name
   )
 

@@ -21,8 +21,8 @@ import sys
 
 import fastapi
 from fastapi.middleware import cors
-from mocks import veo_mocks
-from models import veo_models
+from mocks import api_mocks
+from models import api_models
 import settings
 import uvicorn
 
@@ -47,8 +47,8 @@ app.add_middleware(
 
 @app.post('/veo/generate')
 async def veo_generate_video(
-    request: veo_models.VeoGenerateVideoRequest,
-) -> veo_models.VeoGenerateVideoResponse:
+    request: api_models.VeoGenerateVideoRequest,
+) -> api_models.VeoGenerateVideoResponse:
   """Generates a video using Veo and returns the operation name.
 
   Args:
@@ -60,15 +60,15 @@ async def veo_generate_video(
   logger.info('VeoGenerateRequest: %s', request)
   if env_settings.use_mocks:
     logger.warning('Returning mock VeoGenerateVideoResponse')
-    return veo_mocks.mock_veo_generate_video_response()
+    return api_mocks.mock_veo_generate_video_response()
   # TODO: b/389076463 - Add production logic
-  return veo_models.VeoGenerateVideoResponse(operation_name='operation_name')
+  return api_models.VeoGenerateVideoResponse(operation_name='operation_name')
 
 
 @app.post('/veo/operation/status')
 async def veo_operation_status(
-    request: veo_models.VeoGetOperationStatusRequest,
-) -> veo_models.VeoGetOperationStatusResponse:
+    request: api_models.VeoGetOperationStatusRequest,
+) -> api_models.VeoGetOperationStatusResponse:
   """Checks the status of a video generation operation.
 
   When you generate a video using Veo, it happens asynchronously, and the
@@ -87,9 +87,9 @@ async def veo_operation_status(
   logger.info('VeoGetOperationStatusRequest: %s', request)
   if env_settings.use_mocks:
     logger.warning('Returning mock VeoGetOperationStatusResponse')
-    return veo_mocks.mock_veo_operation_status_response(request)
+    return api_mocks.mock_veo_operation_status_response(request)
   # TODO: b/389076463 - Add production logic
-  response = veo_models.VeoGetOperationStatusResponse(**{
+  response = api_models.VeoGetOperationStatusResponse(**{
       'name': 'projects/PROJECT_ID/operations/OPERATION_ID',
       'done': False,
       'response': None

@@ -11,31 +11,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Defines mock responses for testing related to Veo.
+"""Defines mock responses for testing from the backend API.
 
 This module is used to mock responses from the APIs. This is useful for
 development and testing when you don't want to make actual calls to the Google
 Cloud endpoint like Veo.
 """
 
-from models import veo_models
+from models import api_models
 
 
-def mock_veo_generate_video_response() -> veo_models.VeoGenerateVideoResponse:
+def mock_veo_generate_video_response() -> api_models.VeoGenerateVideoResponse:
   """Returns a mock VeoGenerateVideoResponse for testing.
 
   Returns:
     A mock VeoGenerateVideoResponse.
   """
   operation_name = 'projects/PROJECT_ID/operations/OPERATION_ID'
-  return veo_models.VeoGenerateVideoResponse(operation_name=operation_name)
+  return api_models.VeoGenerateVideoResponse(operation_name=operation_name)
 
 
 def mock_veo_operation_status_response(
-    request: veo_models.VeoGetOperationStatusRequest,
+    request: api_models.VeoGetOperationStatusRequest,
     gcs_bucket_name: str = 'mock-storage-bucket-name',
     num_of_videos: int = 4,
-) -> veo_models.VeoGetOperationStatusResponse:
+) -> api_models.VeoGetOperationStatusResponse:
   """Returns a mock VeoGetOperationStatusResponse for testing.
 
   Args:
@@ -49,16 +49,16 @@ def mock_veo_operation_status_response(
   """
   generated_video_samples = []
   for i in range(num_of_videos):
-    mock_video = veo_models.Video(
+    mock_video = api_models.Video(
         uri=f'gs://{gcs_bucket_name}/veo/generated/sample_{i}.mp4',
         encoding='video/mp4'
     )
-    generated_video_samples.append(veo_models.VideoSample(video=mock_video))
+    generated_video_samples.append(api_models.VideoSample(video=mock_video))
 
-  return veo_models.VeoGetOperationStatusResponse(
+  return api_models.VeoGetOperationStatusResponse(
       name=request.operation_name,
       done=True,
-      response=veo_models.GeneratedSamples(
+      response=api_models.GeneratedSamples(
           generated_samples=generated_video_samples
       ),
   )
