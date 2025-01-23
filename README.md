@@ -33,7 +33,7 @@ Run these steps once:
 ```
 gcloud init
 
-egcloud services enable \
+gcloud services enable \
     cloudbuild.googleapis.com \
     run.googleapis.com
 
