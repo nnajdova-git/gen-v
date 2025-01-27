@@ -35,11 +35,17 @@ gcloud init
 
 gcloud services enable \
     cloudbuild.googleapis.com \
-    run.googleapis.com
+    run.googleapis.com \
+    firestore.googleapis.com
 
 gcloud projects add-iam-policy-binding [project-id] \
   --member="serviceAccount:[project-number]-compute@developer.gserviceaccount.com" \
   --role="roles/storage.objectAdmin"
+
+gcloud firestore databases create \
+  --database=gen-v \
+  --location=europe-west2 \
+  --type=firestore-native
 ```
 
 Run these commands to build & deploy the backend:
