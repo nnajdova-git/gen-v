@@ -200,4 +200,38 @@ describe('ApiService', () => {
     tick(100);
     expect(statusUpdates.length).toBe(4);
   }));
+
+  it('startPollingVeoOperationStatus should timeout after totalTimeoutMs', fakeAsync(() => {
+    const mockOperationName = 'test-operation-name';
+    const totalTimeoutMs = 180;
+    const intervalMs = 50;
+
+    spyOn(service, 'getVeoOperationStatus').and.returnValue(
+      of({name: mockOperationName, done: false, response: null}),
+    );
+
+    const statusUpdates: VeoGetOperationStatusResponse[] = [];
+    service.veoOperationStatus$.subscribe((status) => {
+      statusUpdates.push(status!);
+    });
+
+    service
+      .startPollingVeoOperationStatus(
+        mockOperationName,
+        intervalMs,
+        totalTimeoutMs,
+      )
+      .subscribe({
+        error: (error: Error) => {
+          expect(error.message).toBe(
+            `Polling timed out after ${totalTimeoutMs}ms.`,
+          );
+        },
+      });
+
+    tick(totalTimeoutMs);
+
+    expect(service.getVeoOperationStatus).toHaveBeenCalled();
+    expect(service.getVeoOperationStatus).toHaveBeenCalledTimes(3);
+  }));
 });
