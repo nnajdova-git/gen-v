@@ -24,11 +24,13 @@ import {CommonModule} from '@angular/common';
 import {Component, inject, OnDestroy, OnInit} from '@angular/core';
 import {MatGridList, MatGridTile} from '@angular/material/grid-list';
 import {MatProgressSpinner} from '@angular/material/progress-spinner';
+import {MatSnackBar} from '@angular/material/snack-bar';
 import {Subscription} from 'rxjs';
 import {
   GeneratedSamples,
   VeoGetOperationStatusResponse,
 } from '../../models/api-models';
+import {SnackbarType} from '../../models/material-design.enums';
 import {ApiService} from '../../services/api.service';
 
 /**
@@ -74,12 +76,24 @@ export class VeoVideoDisplayComponent implements OnInit, OnDestroy {
    */
   POLLING_INTERVAL_MS = 5000;
   /**
+   * When to give up the polling for the operation status in milliseconds.
+   * If the operation is not complete by this time, the component will stop
+   * polling and display an error message. This is to prevent the component
+   * from hanging indefinitely.
+   */
+  POLLING_TOTAL_TIMEOUT_MS = 5 * 60 * 1000;
+  /**
    * The service for making API requests.
    */
   private apiService: ApiService;
+  /**
+   * The service for displaying snackbar notifications
+   */
+  private snackBar: MatSnackBar;
 
   constructor() {
     this.apiService = inject(ApiService);
+    this.snackBar = inject(MatSnackBar);
   }
 
   /**
@@ -101,10 +115,24 @@ export class VeoVideoDisplayComponent implements OnInit, OnDestroy {
           this.showComponent = true;
           this.isLoading = true;
           this.veoOperationStatusSubscription = this.apiService
-            .startPollingVeoOperationStatus(name, this.POLLING_INTERVAL_MS)
-            .subscribe((response: VeoGetOperationStatusResponse) => {
-              this.isLoading = !response.done;
-              this.videos = response.response;
+            .startPollingVeoOperationStatus(
+              name,
+              this.POLLING_INTERVAL_MS,
+              this.POLLING_TOTAL_TIMEOUT_MS,
+            )
+            .subscribe({
+              next: (response: VeoGetOperationStatusResponse) => {
+                this.isLoading = !response.done;
+                this.videos = response.response;
+              },
+              error: (error: Error) => {
+                this.isLoading = false;
+                this.showComponent = false;
+                this.snackBar.open(error.message, 'X', {
+                  duration: 10000,
+                  panelClass: [SnackbarType.ERROR],
+                });
+              },
             });
         } else {
           this.showComponent = false;

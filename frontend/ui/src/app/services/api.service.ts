@@ -27,9 +27,12 @@ import {
   BehaviorSubject,
   interval,
   Observable,
+  race,
   switchMap,
   takeWhile,
   tap,
+  throwError,
+  timer,
 } from 'rxjs';
 import {environment} from '../../environments/environment';
 import {
@@ -136,19 +139,36 @@ export class ApiService {
    *
    * @param operationName The name of the operation to poll.
    * @param intervalMs The interval in milliseconds at which to poll.
+   * @param totalTimeoutMs The maximum time in milliseconds to continue polling before giving up.
    * @return An Observable that emits the operation status each time it's
    *  polled. The Observable completes when the operation is done.
    */
   startPollingVeoOperationStatus(
     operationName: string,
     intervalMs = 5000,
+    totalTimeoutMs = 60000,
   ): Observable<VeoGetOperationStatusResponse> {
-    return interval(intervalMs).pipe(
-      switchMap(() =>
-        this.getVeoOperationStatus({operation_name: operationName}),
+    return race(
+      interval(intervalMs).pipe(
+        switchMap(() =>
+          this.getVeoOperationStatus({operation_name: operationName}),
+        ),
+        tap((response: VeoGetOperationStatusResponse) =>
+          this.veoOperationStatusSubject.next(response),
+        ),
+        takeWhile(
+          (response: VeoGetOperationStatusResponse) => !response.done,
+          true,
+        ),
       ),
-      tap((response) => this.veoOperationStatusSubject.next(response)),
-      takeWhile((response) => !response.done, true),
+      timer(totalTimeoutMs).pipe(
+        switchMap(() =>
+          throwError(
+            () =>
+              new Error('Polling timed out after ' + totalTimeoutMs + 'ms.'),
+          ),
+        ),
+      ),
     );
   }
 }

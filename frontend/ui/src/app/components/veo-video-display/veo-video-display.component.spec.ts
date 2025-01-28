@@ -20,9 +20,11 @@ import {
   fakeAsync,
   tick,
 } from '@angular/core/testing';
+import {MatSnackBar} from '@angular/material/snack-bar';
 import {By} from '@angular/platform-browser';
-import {BehaviorSubject, of} from 'rxjs';
+import {BehaviorSubject, of, throwError} from 'rxjs';
 import {VeoGetOperationStatusResponse} from '../../models/api-models';
+import {SnackbarType} from '../../models/material-design.enums';
 import {ApiService} from '../../services/api.service';
 import {VeoVideoDisplayComponent} from './veo-video-display.component';
 
@@ -30,21 +32,27 @@ describe('VeoVideoDisplayComponent', () => {
   let component: VeoVideoDisplayComponent;
   let fixture: ComponentFixture<VeoVideoDisplayComponent>;
   let apiService: jasmine.SpyObj<ApiService>;
+  let snackBar: jasmine.SpyObj<MatSnackBar>;
 
   beforeEach(async () => {
     const apiServiceSpy = jasmine.createSpyObj('ApiService', [
       'startPollingVeoOperationStatus',
     ]);
     apiServiceSpy.veoOperationName$ = new BehaviorSubject<string | null>(null);
+    const snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
 
     await TestBed.configureTestingModule({
       imports: [VeoVideoDisplayComponent],
-      providers: [{provide: ApiService, useValue: apiServiceSpy}],
+      providers: [
+        {provide: ApiService, useValue: apiServiceSpy},
+        {provide: MatSnackBar, useValue: snackBarSpy},
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(VeoVideoDisplayComponent);
     component = fixture.componentInstance;
     apiService = TestBed.inject(ApiService) as jasmine.SpyObj<ApiService>;
+    snackBar = TestBed.inject(MatSnackBar) as jasmine.SpyObj<MatSnackBar>;
   });
 
   it('should create', () => {
@@ -94,5 +102,30 @@ describe('VeoVideoDisplayComponent', () => {
 
     const videoElements = fixture.debugElement.queryAll(By.css('video'));
     expect(videoElements.length).toBe(2);
+  }));
+
+  it('should display error in snackbar if polling times out', fakeAsync(() => {
+    const mockOperationName = 'test-operation-name';
+    const expectedErrorMessage = `Polling timed out after ${component.POLLING_TOTAL_TIMEOUT_MS}ms.`;
+    const error = new Error(expectedErrorMessage);
+
+    apiService.startPollingVeoOperationStatus.and.returnValue(
+      throwError(() => error),
+    );
+
+    (apiService.veoOperationName$ as BehaviorSubject<string | null>).next(
+      mockOperationName,
+    );
+
+    fixture.detectChanges();
+
+    tick(component.POLLING_TOTAL_TIMEOUT_MS + 1);
+
+    expect(snackBar.open).toHaveBeenCalledWith(expectedErrorMessage, 'X', {
+      duration: 10000,
+      panelClass: [SnackbarType.ERROR],
+    });
+    expect(component.isLoading).toBeFalse();
+    expect(component.showComponent).toBeFalse();
   }));
 });
