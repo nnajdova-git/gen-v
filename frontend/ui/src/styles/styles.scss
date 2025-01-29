@@ -15,27 +15,31 @@
  */
 
 @use '@angular/material' as mat;
+@use './theme-colors' as my-theme;
 
 @import url(
   https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap
 );
 
 html {
+  color-scheme: light;
   @include mat.theme((
     color: (
+      primary: my-theme.$primary-palette,
+      tertiary: my-theme.$tertiary-palette,
       theme-type: light,
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
+      use-system-variables: true,
     ),
-    typography: 'Open Sans',
+    typography: (
+      plain-family: Open Sans,
+      brand-family: Roboto,
+      bold-weight: 900,
+      medium-weight: 500,
+      regular-weight: 300,
+      use-system-variables: true,
+    ),
     density: 0,
   ));
-}
-
-:root {
-  --primary-color: #015ABB;
-  --primary-font-color: ##595959;
-  --brand-color: #f9bb42;
 }
 
 html, body {
@@ -44,12 +48,13 @@ html, body {
 
 body {
   margin: 0;
-  font-family: 'Open Sans', serif;
-  color: var(--primary-font-color);
+  background: var(--mat-sys-background);
+  color: var(--mat-sys-on-background);
+  font-family: var(--mat-sys-body-medium-font);
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Roboto', serif;
+  font-family: var(--mat-sys-headline-medium-font);
 }
 
 .full-width {
@@ -63,12 +68,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 // Material design customisations
-.mat-mdc-snack-bar-container.error {
-  --mat-snack-bar-button-color: #FFF;
-  --mdc-snackbar-container-color: #CC0000;
-  --mdc-snackbar-supporting-text-color: #FFF;
+.error {
+  @include mat.snack-bar-overrides((
+    container-color: #CC0000,
+    supporting-text-color: #FFF,
+    button-color: #fff
+  ));
 }
 
-.mat-mdc-snack-bar-container.success {
-  --mat-snack-bar-button-color: #4BB543;
+.success {
+  @include mat.snack-bar-overrides((
+    button-color: #4BB543
+  ));
 }

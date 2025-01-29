@@ -19,8 +19,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 32px;
-  background-color: #fff;
-  border-bottom: 1px solid #eee;
 
   .logo-container {
     display: flex;
@@ -35,7 +33,6 @@
   .title {
     font-size: 20px;
     font-weight: bold;
-    color: var(--brand-color);
   }
 
   nav {
@@ -44,7 +41,7 @@
     .nav-link {
       margin-left: 24px;
       text-decoration: none;
-      color: var(--primary-color);
+      color: var(--mat-sys-primary);
 
       &:hover {
         text-decoration: underline;

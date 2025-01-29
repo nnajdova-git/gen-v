@@ -32,7 +32,8 @@
               }
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles/styles.scss",
+              "src/styles/_theme-colors.scss"
             ],
             "scripts": []
           },
@@ -97,7 +98,8 @@
               }
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles/styles.scss",
+              "src/styles/_theme-colors.scss"
             ],
             "scripts": []
           }

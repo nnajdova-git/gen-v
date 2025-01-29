@@ -37,7 +37,7 @@
       </mat-error>
     </mat-form-field>
 
-    <button mat-raised-button color="primary" type="submit" [disabled]="isLoading">
+    <button mat-raised-button type="submit" [disabled]="isLoading">
       <span *ngIf="!isLoading">Generate Video</span>
       <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
     </button>
