@@ -13,22 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * @file The Home page component. This is the main entry point for the app.
- */
-
 import {Component} from '@angular/core';
-import {HeroComponent} from '../hero/hero.component';
-import {VeoVideoDisplayComponent} from '../veo-video-display/veo-video-display.component';
 
 /**
- * The main landing page for the app.
+ * The page wrapper for the home landing page.
  */
 @Component({
-  selector: 'app-home',
-  imports: [HeroComponent, VeoVideoDisplayComponent],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.scss',
+  selector: 'app-landing-page',
+  imports: [],
+  templateUrl: './landing-page.component.html',
+  styleUrl: './landing-page.component.scss',
 })
-export class HomeComponent {}
+export class LandingPageComponent {}

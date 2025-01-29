@@ -13,25 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import {provideHttpClient} from '@angular/common/http';
-import {provideHttpClientTesting} from '@angular/common/http/testing';
-import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {HomeComponent} from './home.component';
+import {GenerateVideoPageComponent} from './generate-video-page.component';
 
-describe('HomeComponent', () => {
-  let component: HomeComponent;
-  let fixture: ComponentFixture<HomeComponent>;
+describe('GenerateVideoPageComponent', () => {
+  let component: GenerateVideoPageComponent;
+  let fixture: ComponentFixture<GenerateVideoPageComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HomeComponent, NoopAnimationsModule],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      imports: [GenerateVideoPageComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(HomeComponent);
+    fixture = TestBed.createComponent(GenerateVideoPageComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

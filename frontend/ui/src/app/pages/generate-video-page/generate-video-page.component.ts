@@ -13,18 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Routes} from '@angular/router';
-import {GenerateVideoPageComponent} from './pages/generate-video-page/generate-video-page.component';
-import {LandingPageComponent} from './pages/landing-page/landing-page.component';
+import {Component} from '@angular/core';
 
 /**
- * The application's routing configuration.
- *
- * This array defines the routes for the Gen V application, mapping URL paths
- * to specific components.
+ * The page wrapper for the generate video page.
  */
-export const routes: Routes = [
-  {path: '', component: LandingPageComponent, pathMatch: 'full'},
-  {path: 'generate-video', component: GenerateVideoPageComponent},
-];
+@Component({
+  selector: 'app-generate-video-page',
+  imports: [],
+  templateUrl: './generate-video-page.component.html',
+  styleUrl: './generate-video-page.component.scss',
+})
+export class GenerateVideoPageComponent {}
