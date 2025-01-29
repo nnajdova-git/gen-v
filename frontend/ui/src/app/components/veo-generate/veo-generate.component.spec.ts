@@ -21,7 +21,7 @@ import {of, throwError} from 'rxjs';
 import {
   VeoGenerateVideoRequest,
   VeoGenerateVideoResponse,
-} from '../../models/api-models';
+} from '../../models/api.models';
 import {SnackbarType} from '../../models/material-design.enums';
 import {ApiService} from '../../services/api.service';
 import {VeoGenerateComponent} from './veo-generate.component';

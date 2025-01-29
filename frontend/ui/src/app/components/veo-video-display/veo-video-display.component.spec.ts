@@ -23,7 +23,7 @@ import {
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {By} from '@angular/platform-browser';
 import {BehaviorSubject, of, throwError} from 'rxjs';
-import {VeoGetOperationStatusResponse} from '../../models/api-models';
+import {VeoGetOperationStatusResponse} from '../../models/api.models';
 import {SnackbarType} from '../../models/material-design.enums';
 import {ApiService} from '../../services/api.service';
 import {VeoVideoDisplayComponent} from './veo-video-display.component';
