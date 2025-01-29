@@ -40,7 +40,7 @@ import {
   VeoGenerateVideoResponse,
   VeoGetOperationStatusRequest,
   VeoGetOperationStatusResponse,
-} from '../models/api-models';
+} from '../models/api.models';
 
 /**
  * A service that handles API requests to the backend.

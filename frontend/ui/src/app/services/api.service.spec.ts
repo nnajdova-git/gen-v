@@ -27,7 +27,7 @@ import {
   VeoGenerateVideoResponse,
   VeoGetOperationStatusRequest,
   VeoGetOperationStatusResponse,
-} from '../models/api-models';
+} from '../models/api.models';
 import {ApiService} from './api.service';
 
 describe('ApiService', () => {
