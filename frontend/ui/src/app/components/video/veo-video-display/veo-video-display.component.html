@@ -12,17 +12,17 @@
 -->
 <section class="veo-video-display" *ngIf="showComponent">
   <div *ngIf="isLoading">
-    <div class="spinner-container">
+    <div class="veo-video-display__spinner-container">
       <mat-spinner></mat-spinner>
     </div>
-    <div class="waiting-message">
+    <div class="veo-video-display__waiting-message">
       <p>Your videos are being generated and will appear shortly.</p>
     </div>
   </div>
   <div *ngIf="!isLoading">
     <mat-grid-list cols="4" gutterSize="20px">
       <mat-grid-tile *ngFor="let videoSample of videos?.generated_samples">
-        <video controls>
+        <video class="veo-video-display__video" controls>
           <source [src]="videoSample.video.uri" [type]="videoSample.video.encoding" />
           Your browser does not support the video tag.
         </video>

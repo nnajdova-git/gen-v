@@ -15,20 +15,18 @@
  */
 
 .veo-video-display{
-  .spinner-container {
+  &__spinner-container {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 200px;
   }
 
-  .waiting-message {
+  &__waiting-message {
     text-align: center;
   }
 
-  video {
+  &__video {
     width: 100%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    border-radius: 20px;
   }
 }
