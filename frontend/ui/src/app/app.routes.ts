@@ -25,6 +25,17 @@ import {LandingPageComponent} from './pages/landing-page/landing-page.component'
  * to specific components.
  */
 export const routes: Routes = [
-  {path: '', component: LandingPageComponent, pathMatch: 'full'},
-  {path: 'generate-video', component: GenerateVideoPageComponent},
+  {
+    path: '',
+    component: LandingPageComponent,
+    pathMatch: 'full',
+    title: 'Gen V | Ad Generation using Imagen & Veo',
+    data: {topbarTitle: 'Gen V: Ad Generation using Imagen & Veo'},
+  },
+  {
+    path: 'generate-video',
+    component: GenerateVideoPageComponent,
+    title: 'Gen V | Generate Videos',
+    data: {topbarTitle: 'Gen V: Generate Videos'},
+  },
 ];
