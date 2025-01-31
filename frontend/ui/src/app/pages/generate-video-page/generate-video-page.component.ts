@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 import {Component} from '@angular/core';
+import {VeoGenerateComponent} from '../../components/video/veo-generate/veo-generate.component';
 
 /**
  * The page wrapper for the generate video page.
  */
 @Component({
   selector: 'app-generate-video-page',
-  imports: [],
+  imports: [VeoGenerateComponent],
   templateUrl: './generate-video-page.component.html',
   styleUrl: './generate-video-page.component.scss',
 })
