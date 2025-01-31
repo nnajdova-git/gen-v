@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-.topbar {
+ .topbar {
+  position: relative;
   display: flex;
   align-items: center;
   height: 7rem;
@@ -26,6 +27,24 @@
   &__title-container {
     display: flex;
     align-items: center;
+    text-align: center;
+    justify-content: center;
+  }
+
+  &__left {
+    width: var(--sidenav-width);
+  }
+
+  &__middle {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: fit-content;
+  }
+
+  &__sidenav-menu-icon:hover{
+    cursor: pointer;
+    color: var(--mat-sys-primary);
   }
 
   &__logo {

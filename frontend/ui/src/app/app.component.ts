@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
+import {CommonModule} from '@angular/common';
 import {Component} from '@angular/core';
+import {MatSidenavModule} from '@angular/material/sidenav';
 import {RouterOutlet} from '@angular/router';
+import {SidenavComponent} from './components/shared/sidenav/sidenav.component';
 import {TopbarComponent} from './components/shared/topbar/topbar.component';
 
 /**
@@ -25,7 +28,13 @@ import {TopbarComponent} from './components/shared/topbar/topbar.component';
  */
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, TopbarComponent],
+  imports: [
+    CommonModule,
+    MatSidenavModule,
+    RouterOutlet,
+    SidenavComponent,
+    TopbarComponent,
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })

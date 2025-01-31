@@ -42,6 +42,11 @@ html {
   ));
 }
 
+:root{
+  --sidenav-width: 6rem;
+  --page-gutter-size: 1rem;
+}
+
 html, body {
   height: 100%;
 }
@@ -57,14 +62,10 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--mat-sys-headline-medium-font);
 }
 
-.full-width {
-  width: 100%;
-}
-
-.content {
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
+.page-container{
+  background-color: var(--mat-sys-surface-container-lowest);
+  margin-right: var(--page-gutter-size);
+  padding: 2rem;
 }
 
 // Material design customisations

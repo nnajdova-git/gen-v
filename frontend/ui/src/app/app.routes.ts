@@ -33,7 +33,7 @@ export const routes: Routes = [
     data: {topbarTitle: 'Gen V: Ad Generation using Imagen & Veo'},
   },
   {
-    path: 'generate-video',
+    path: 'generate-videos',
     component: GenerateVideoPageComponent,
     title: 'Gen V | Generate Videos',
     data: {topbarTitle: 'Gen V: Generate Videos'},

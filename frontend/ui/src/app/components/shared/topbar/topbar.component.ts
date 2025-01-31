@@ -18,7 +18,9 @@
  * @file the topbar component for the application.
  */
 
-import {Component, inject, OnDestroy, OnInit} from '@angular/core';
+import {Component, inject, Input, OnDestroy, OnInit} from '@angular/core';
+import {MatIcon} from '@angular/material/icon';
+import {MatSidenav, MatSidenavModule} from '@angular/material/sidenav';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {filter, map, Subject, takeUntil} from 'rxjs';
 
@@ -27,7 +29,7 @@ import {filter, map, Subject, takeUntil} from 'rxjs';
  */
 @Component({
   selector: 'app-topbar',
-  imports: [],
+  imports: [MatIcon, MatSidenavModule],
   templateUrl: './topbar.component.html',
   styleUrl: './topbar.component.scss',
 })
@@ -49,6 +51,10 @@ export class TopbarComponent implements OnInit, OnDestroy {
    * The Angular Router service.
    */
   private router: Router;
+  /**
+   * The sidenav component that this topbar controls.
+   */
+  @Input({required: true}) sidenav!: MatSidenav;
 
   constructor() {
     this.route = inject(ActivatedRoute);
@@ -74,6 +80,14 @@ export class TopbarComponent implements OnInit, OnDestroy {
       .subscribe((title) => {
         this.pageTitle = title;
       });
+  }
+
+  /**
+   * Toggles the state of the sidenav (open/closed).
+   * Uses the MatSidenav.toggle() method.
+   */
+  toggleSidenav() {
+    this.sidenav.toggle();
   }
 
   /**

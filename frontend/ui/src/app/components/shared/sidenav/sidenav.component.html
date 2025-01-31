@@ -1,0 +1,36 @@
+<!--
+ Copyright 2025 Google LLC
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<div class="sidenav">
+  <ul class="sidenav__nav-list">
+    <li class="sidenav__nav-item">
+      <a class="sidenav__nav-link"
+          routerLink="/" [routerLinkActiveOptions]="{ exact: true }"
+          routerLinkActive="active">
+        <span class="sidenav__nav-icon-container">
+          <mat-icon class="sidenav__nav-icon">stars</mat-icon>
+        </span>
+        <span class="sidenav__nav-text">Generate Images</span>
+      </a>
+    </li>
+    <li class="sidenav__nav-item">
+      <a class="sidenav__nav-link"
+          routerLink="/generate-videos"
+          routerLinkActive="active">
+        <span class="sidenav__nav-icon-container">
+          <mat-icon class="sidenav__nav-icon">stars</mat-icon>
+        </span>
+        <span class="sidenav__nav-text">Generate Videos</span>
+      </a>
+    </li>
+  </ul>
+</div>

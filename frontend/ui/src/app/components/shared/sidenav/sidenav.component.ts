@@ -14,26 +14,22 @@
  * limitations under the License.
  */
 
-.app {
-  &__container{
-    &.sidenav-open{
-      padding: 0 rem;
-    }
-    &.sidenav-closed {
-      padding-left: var(--page-gutter-size);
-    }
-  }
+/**
+ * @file This component implements the application's main navigation.
+ */
 
-  &__mat-sidenav-container{
-    height: calc(100vh - 7rem);
-  }
+import {Component} from '@angular/core';
+import {MatIcon} from '@angular/material/icon';
+import {MatListModule} from '@angular/material/list';
+import {RouterLink, RouterLinkActive} from '@angular/router';
 
-  &__mat-sidenav{
-    width: var(--sidenav-width);
-  }
-
-  &__mat-sidenav-content {
-    flex: 1;
-    overflow: auto;
-  }
-}
+/**
+ * Provides the main navigation for the application.
+ */
+@Component({
+  selector: 'app-sidenav',
+  imports: [MatListModule, MatIcon, RouterLink, RouterLinkActive],
+  templateUrl: './sidenav.component.html',
+  styleUrl: './sidenav.component.scss',
+})
+export class SidenavComponent {}
