@@ -11,35 +11,47 @@
  limitations under the License.
 -->
 <div class="veo-generate">
-  <form [formGroup]="form" (ngSubmit)="generateVideo()">
-    <div class="image-upload-container">
+  <form class="veo-generate__form" [formGroup]="form" (ngSubmit)="generateVideo()">
+    <div class="veo-generate__prompt-container">
+      <mat-form-field appearance="fill" class="veo-generate__full-width">
+        <mat-label>What would you like to generate?</mat-label>
+        <textarea matInput placeholder="Enter your prompt" formControlName="prompt" rows="10"></textarea>
+        <mat-error *ngIf="form.get('prompt')?.hasError('required')">
+          Prompt is required
+        </mat-error>
+      </mat-form-field>
+      <div class="veo-generate__form-btn-container">
+        <button mat-raised-button type="submit" [disabled]="isLoading">
+          <span *ngIf="!isLoading">Generate with Veo</span>
+          <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+        </button>
+      </div>
+    </div>
+    <div class="veo-generate__image-container">
       <input type="file" hidden (change)="onFileSelected($event)" #fileUpload formControlName="file"
-        accept="image/*">
-      <button mat-fab (click)="fileUpload.click(); $event.preventDefault()" [disabled]="image">
+          accept="image/*">
+      <button *ngIf="!image" mat-fab (click)="fileUpload.click(); $event.preventDefault()" [disabled]="image">
         <mat-icon aria-hidden="false" aria-label="Image icon" fontIcon="image"></mat-icon>
       </button>
-      <div *ngIf="image" class="image-preview">
-        <div class="image-wrapper">
+      <div *ngIf="image" class="veo-generate__image-preview">
+        <div class="veo-generate__image-wrapper">
           <img [src]="image" alt="Image Preview">
         </div>
-        <button mat-mini-fab color="warn" class="close-button"
-            (click)="clearImage(); $event.preventDefault()">
+        <button mat-mini-fab color="warn" class="veo-generate__close-button" (click)="clearImage(); $event.preventDefault()">
           <mat-icon>close</mat-icon>
         </button>
       </div>
     </div>
 
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Prompt</mat-label>
-      <textarea matInput placeholder="Enter your prompt" formControlName="prompt">></textarea>
-      <mat-error *ngIf="form.get('prompt')?.hasError('required')">
-        Prompt is required
-      </mat-error>
-    </mat-form-field>
-
-    <button mat-raised-button type="submit" [disabled]="isLoading">
-      <span *ngIf="!isLoading">Generate Video</span>
-      <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
-    </button>
+    <div class="veo-generate__helpers-container">
+      <div class="veo-generate__helper-btn-container">
+        <button class="veo-generate__helper-btn" mat-button>Use Gemini to improve prompt</button>
+        <button class="veo-generate__helper-btn" mat-button>Import previous prompt</button>
+        <button class="veo-generate__helper-btn" mat-button>Save my prompt for later</button>
+        <button class="veo-generate__helper-btn" mat-button>Settings (aspect ratio)</button>
+        <button class="veo-generate__helper-btn" mat-button>Import previously generated image</button>
+        <button class="veo-generate__helper-btn" mat-button>Upload my own starting image</button>
+      </div>
+    </div>
   </form>
 </div>
