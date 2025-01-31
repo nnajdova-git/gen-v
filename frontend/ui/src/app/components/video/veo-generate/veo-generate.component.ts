@@ -36,9 +36,9 @@ import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 import {
   VeoGenerateVideoRequest,
   VeoGenerateVideoResponse,
-} from '../../models/api.models';
-import {SnackbarType} from '../../models/material-design.enums';
-import {ApiService} from '../../services/api.service';
+} from '../../../models/api.models';
+import {SnackbarType} from '../../../models/material-design.enums';
+import {ApiService} from '../../../services/api.service';
 
 /**
  * A component that allows users to generate videos via Veo.
