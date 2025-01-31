@@ -11,10 +11,20 @@
  limitations under the License.
 -->
 
-<app-topbar></app-topbar>
+<div class="app">
+  <app-topbar [sidenav]="sidenav"></app-topbar>
+  <div class="app__container"
+      [ngClass]="{'sidenav-open': sidenav.opened, 'sidenav-closed': !sidenav.opened}">
+    <mat-sidenav-container class="app__mat-sidenav-container">
+      <mat-sidenav #sidenav mode="side" opened class="app__mat-sidenav">
+        <app-sidenav></app-sidenav>
+      </mat-sidenav>
 
-<main class="main">
-  <div class="content">
-    <router-outlet />
+      <mat-sidenav-content>
+        <div class="content">
+          <router-outlet />
+        </div>
+      </mat-sidenav-content>
+    </mat-sidenav-container>
   </div>
-</main>
+</div>
