@@ -143,7 +143,9 @@ describe('VeoGenerateComponent', () => {
     component.form.get('image')?.setValue('test-image-data');
     fixture.detectChanges();
 
-    const closeButton = fixture.debugElement.query(By.css('.close-button'));
+    const closeButton = fixture.debugElement.query(
+      By.css('.veo-generate__close-button'),
+    );
     closeButton.triggerEventHandler('click');
 
     expect(component.image).toBeUndefined();
@@ -171,6 +173,6 @@ describe('VeoGenerateComponent', () => {
 
     const button = fixture.debugElement.query(By.css('button[mat-fab]'));
 
-    expect(button.nativeElement.disabled).toBe(true);
+    expect(button).toBeNull();
   });
 });
