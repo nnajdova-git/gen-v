@@ -42,6 +42,10 @@
     width: fit-content;
   }
 
+  &__right{
+    padding: 0 var(--page-gutter-size);
+  }
+
   &__sidenav-menu-icon:hover{
     cursor: pointer;
     color: var(--mat-sys-primary);

@@ -23,13 +23,14 @@ import {MatIcon} from '@angular/material/icon';
 import {MatSidenav, MatSidenavModule} from '@angular/material/sidenav';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {filter, map, Subject, takeUntil} from 'rxjs';
+import {ThemeToggleComponent} from '../theme-toggle/theme-toggle.component';
 
 /**
  * The topbar component.
  */
 @Component({
   selector: 'app-topbar',
-  imports: [MatIcon, MatSidenavModule],
+  imports: [MatIcon, MatSidenavModule, ThemeToggleComponent],
   templateUrl: './topbar.component.html',
   styleUrl: './topbar.component.scss',
 })

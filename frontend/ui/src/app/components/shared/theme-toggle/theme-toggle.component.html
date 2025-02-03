@@ -10,18 +10,8 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<div class="topbar">
-  <div class="topbar__left">
-    <mat-icon class="topbar__sidenav-menu-icon" (click)="toggleSidenav()">menu</mat-icon>
-  </div>
-  <div class="topbar__middle">
-    <div class="topbar__title-container">
-      <img src="assets/gen-v-logo-small.png" alt="Gen V Logo" class="topbar__logo">
-      <h2 class="topbar__title">{{ pageTitle }}</h2>
-    </div>
-  </div>
-  <div class="topbar__right">
-    <app-theme-toggle></app-theme-toggle>
-    <div class="topbar__user-profile"></div>
-  </div>
-</div>
+<button mat-icon-button
+    [matTooltip]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+    (click)="toggleTheme()">
+  <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+</button>
