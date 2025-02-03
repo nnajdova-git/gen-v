@@ -13,3 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+.landing-page{
+  &__title-container{
+    text-align: center;
+
+    h1{
+      font-size: var(--mat-sys-display-medium-size);
+      margin: 0.5rem 0 2rem;
+    }
+  }
+}
