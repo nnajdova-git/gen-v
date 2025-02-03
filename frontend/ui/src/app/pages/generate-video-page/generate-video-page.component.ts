@@ -15,13 +15,14 @@
  */
 import {Component} from '@angular/core';
 import {VeoGenerateComponent} from '../../components/video/veo-generate/veo-generate.component';
+import {VeoVideoDisplayComponent} from "../../components/video/veo-video-display/veo-video-display.component";
 
 /**
  * The page wrapper for the generate video page.
  */
 @Component({
   selector: 'app-generate-video-page',
-  imports: [VeoGenerateComponent],
+  imports: [VeoGenerateComponent, VeoVideoDisplayComponent],
   templateUrl: './generate-video-page.component.html',
   styleUrl: './generate-video-page.component.scss',
 })
