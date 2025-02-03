@@ -18,7 +18,9 @@ from google.cloud import storage
 
 
 def check_file_exists(
-    file_name: str, bucket_name: str, storage_client: storage.Client
+    file_name: str,
+    bucket_name: str,
+    storage_client: storage.Client | None = None,
 ) -> None:
   """Checks if a file exists at the given bucket.
 
@@ -33,6 +35,7 @@ def check_file_exists(
   Raises:
     FileNotFoundError: If the file does not exist.
   """
+  storage_client = storage_client or storage.Client()
   bucket = storage_client.bucket(bucket_name)
   exists = storage.Blob(bucket=bucket, name=file_name).exists(storage_client)
   if not exists:
@@ -43,7 +46,9 @@ def check_file_exists(
 
 
 def get_signed_url_from_gcs(
-    bucket_name: str, file_name: str, storage_client: storage.Client
+    bucket_name: str,
+    file_name: str,
+    storage_client: storage.Client | None = None
 ) -> str:
   """Gets the signed URL to a file in Google Cloud Storage.
 
@@ -55,6 +60,7 @@ def get_signed_url_from_gcs(
   Returns:
     The signed URL to the file.
   """
+  storage_client = storage_client or storage.Client()
   bucket = storage_client.bucket(bucket_name)
   blob = bucket.blob(file_name)
   file_path = blob.generate_signed_url(
@@ -64,7 +70,9 @@ def get_signed_url_from_gcs(
 
 
 def read_from_gcs(
-    bucket_name: str, file_name: str, storage_client: storage.Client
+    bucket_name: str,
+    file_name: str,
+    storage_client: storage.Client | None = None,
 ) -> bytes:
   """Reads a file from Google Cloud Storage.
 
@@ -76,6 +84,7 @@ def read_from_gcs(
   Returns:
     The content of the file.
   """
+  storage_client = storage_client or storage.Client()
   bucket = storage_client.bucket(bucket_name)
   blob = bucket.blob(file_name)
   with blob.open('r') as f:
@@ -87,7 +96,7 @@ def write_to_gcs(
     file_content,
     bucket_name: str,
     file_name: str,
-    storage_client: storage.Client,
+    storage_client: storage.Client | None = None,
 ) -> None:
   """Writes a file to Google Cloud Storage.
 
@@ -97,6 +106,7 @@ def write_to_gcs(
     file_name: The name of the file.
     storage_client: The Google Cloud Storage client.
   """
+  storage_client = storage_client or storage.Client()
   bucket = storage_client.bucket(bucket_name)
   blob = bucket.blob(file_name)
   # Mode can be specified as wb/rb for bytes mode.
