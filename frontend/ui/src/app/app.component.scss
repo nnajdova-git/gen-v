@@ -25,7 +25,7 @@
   }
 
   &__mat-sidenav-container{
-    height: calc(100vh - 7rem);
+    height: calc(100vh - var(--topbar-height));
   }
 
   &__mat-sidenav{

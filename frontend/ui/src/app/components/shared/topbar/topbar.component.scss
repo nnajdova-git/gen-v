@@ -18,7 +18,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  height: 7rem;
+  height: var(--topbar-height);
   justify-content: space-between;
 
   &__left,
