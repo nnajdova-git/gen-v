@@ -20,6 +20,7 @@ import pydantic
 class VeoAIModel(str, enum.Enum):
   """Enum of the various Veo AI models."""
   VEO_2_0_GENERATE_EXP = 'veo-2.0-generate-exp'
+  VEO_1_PREVIEW_0815 = 'veo-001-preview-0815'
 
 
 class VertexAIGenerateVideoRequest(pydantic.BaseModel):
