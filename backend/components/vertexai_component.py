@@ -76,7 +76,7 @@ def generate_video(
     }
 
   headers = {
-      'Authorization': f'Bearer: {access_token}',
+      'Authorization': f'Bearer {access_token}',
       'Content-Type': 'application/json; charset=utf-8',
   }
   response = requests.post(url, json=payload, headers=headers)
