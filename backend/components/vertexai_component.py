@@ -12,13 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """A component to work with Vertex AI in Google Cloud."""
+
+import logging
+import sys
+
 import google.auth
 from google.auth.transport import requests as google_requests
 from models import vertexai_models
 import requests
 
 
-_VERTEX_AI_ENDPOINT = 'https://{region}-aiplatform.googleapis.com/v1/projects/{project_id}/locations/{region}/publishers/google/models/{model_id}:predictLongRunning'
+logging.basicConfig(stream=sys.stdout)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+
+_VERTEX_AI_ENDPOINT = 'https://{region}-aiplatform.googleapis.com/v1/projects/{project_id}/locations/{region}/publishers/google/models/{model_id}:{task}'
 
 
 def get_access_token() -> str:
@@ -31,7 +40,7 @@ def get_access_token() -> str:
 
 def generate_video(
     request: vertexai_models.VertexAIGenerateVideoRequest,
-    access_token: str = None,
+    access_token: str | None = None,
 ) -> vertexai_models.VertexAIGenerateVideoResponse:
   """Generates a video using Veo.
 
@@ -56,7 +65,9 @@ def generate_video(
       region=request.google_cloud_region,
       project_id=request.google_cloud_project_id,
       model_id=request.veo_model_id.value,
+      task='predictLongRunning',
   )
+  logger.info('Sending video generation request to: %s', url)
   payload = {
       'instances': [{
           'prompt': request.prompt,
@@ -83,4 +94,44 @@ def generate_video(
   response.raise_for_status()
   return vertexai_models.VertexAIGenerateVideoResponse(
       operation_name=response.json()['name'],
+  )
+
+
+def fetch_operation_status(
+    request: vertexai_models.VertexAIFetchVeoOperationStatusRequest,
+    access_token: str | None = None,
+) -> vertexai_models.VertexAIFetchVeoOperationStatusResponse:
+  """Fetches the status of a video generation operation.
+
+  Args:
+    request: The request object containing the parameters for fetching the
+      operation status.
+    access_token: The access token to use for authentication. If not provided,
+      the default credentials will be used. This is primarily used for
+      dependency injection in testing.
+
+  Returns:
+    The response of the operation status.
+
+  Raises:
+    requests.exceptions.HTTPError: If the API request fails (non-2xx status
+    code).
+  """
+  access_token = access_token or get_access_token()
+  url = _VERTEX_AI_ENDPOINT.format(
+      region=request.google_cloud_region,
+      project_id=request.google_cloud_project_id,
+      model_id=request.veo_model_id.value,
+      task='fetchPredictOperation',
+  )
+  logger.info('Fetching operation status from: %s', url)
+  payload = {'operationName': request.operation_name}
+  headers = {
+      'Authorization': f'Bearer {access_token}',
+      'Content-Type': 'application/json; charset=utf-8',
+  }
+  response = requests.post(url, json=payload, headers=headers)
+  response.raise_for_status()
+  return vertexai_models.VertexAIFetchVeoOperationStatusResponse(
+      **response.json()
   )
