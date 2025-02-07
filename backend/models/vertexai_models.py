@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """The model definitions for working with Vertex AI."""
+
 import enum
 import re
+
 import pydantic
 
 
@@ -86,3 +88,60 @@ class VertexAIGenerateVideoResponse(pydantic.BaseModel):
       process.
   """
   operation_name: str
+
+
+class VertexAIVideo(pydantic.BaseModel):
+  """A single video in Vertex AI.
+
+  Attributes:
+    uri: The URI of the video.
+    encoding: The encoding of the video.
+  """
+  uri: str
+  encoding: str
+
+
+class VertexAIVideoSample(pydantic.BaseModel):
+  """A single video sample in Vertex AI.
+
+  Attributes:
+    video: The video sample.
+  """
+  video: VertexAIVideo
+
+
+class VertexAIGeneratedSamples(pydantic.BaseModel):
+  """A list of generated video samples from Vertex AI.
+
+  Attributes:
+    samples: The list of generated video samples.
+  """
+  generated_samples: list[VertexAIVideoSample]
+
+
+class VertexAIFetchVeoOperationStatusRequest(pydantic.BaseModel):
+  """A request to check the status of a Veo operation.
+
+  Attributes:
+    operation_name: The name of the operation to get the status of.
+    google_cloud_project_id: The Google Cloud project ID to use with Vertex AI.
+    google_cloud_region: The Google Cloud region to use.
+    veo_model_id: The Veo AI model to use.
+  """
+  operation_name: str
+  google_cloud_project_id: str
+  google_cloud_region: str = 'us-central1'
+  veo_model_id: VeoAIModel = VeoAIModel.VEO_2_0_GENERATE_EXP
+
+
+class VertexAIFetchVeoOperationStatusResponse(pydantic.BaseModel):
+  """A response from checking the status of a Veo operation.
+
+  Attributes:
+    name: The name of the operation.
+    done: Whether the operation is done.
+    response: The response from the operation, if it is done.
+  """
+  name: str
+  done: bool = False
+  response: VertexAIGeneratedSamples | None = None

@@ -21,6 +21,12 @@ import pytest
 import requests
 
 
+@pytest.fixture(name='mock_requests_post')
+def mock_requests_post_fixture():
+  with mock.patch.object(requests, 'post', autospec=True) as requests_post:
+    yield requests_post
+
+
 @pytest.fixture(name='mock_generate_video_response_200')
 def mock_generate_video_response_200_fixture():
   mock_response = mock.Mock()
@@ -35,6 +41,16 @@ def mock_vertexai_generate_video_request_fixture():
       prompt='A cat playing the piano',
       google_cloud_project_id='my-project',
       google_cloud_storage_uri='gs://my-bucket/my-folder',
+  )
+
+
+@pytest.fixture(name='mock_vertexai_fetch_status_request')
+def mock_vertexai_fetch_status_request_fixture():
+  return vertexai_models.VertexAIFetchVeoOperationStatusRequest(
+      operation_name='test_operation',
+      google_cloud_project_id='my-project',
+      google_cloud_region='us-central1',
+      veo_model_id=vertexai_models.VeoAIModel.VEO_2_0_GENERATE_EXP,
   )
 
 
@@ -59,7 +75,7 @@ def test_generate_video_success(
       call_kwargs['json']['instances'][0]['prompt']
       == mock_vertexai_generate_video_request.prompt
   )
-  assert call_kwargs['headers']['Authorization'] == 'Bearer: mock-token'
+  assert call_kwargs['headers']['Authorization'] == 'Bearer mock-token'
 
 
 @mock.patch.object(requests, 'post', autospec=True)
@@ -93,3 +109,59 @@ def test_generate_video_with_image(
       call_kwargs['json']['instances'][0]['image']['mimeType']
       == expected_mime_type
   )
+
+
+def test_fetch_operation_status_success(
+    mock_requests_post, mock_vertexai_fetch_status_request
+):
+  mock_response = mock.Mock()
+  mock_response.status_code = 200
+  mock_response.json.return_value = {
+      'name': 'test_operation',
+      'done': True,
+      'response': {
+          'generated_samples': [{
+              'video': {
+                  'uri': 'gs://test-bucket/video1.mp4',
+                  'encoding': 'video/mp4',
+              }
+          }]
+      },
+  }
+  mock_requests_post.return_value = mock_response
+
+  response = vertexai_component.fetch_operation_status(
+      mock_vertexai_fetch_status_request, access_token='mock-token'
+  )
+
+  assert response.done
+  assert response.name == 'test_operation'
+  assert response.response
+  assert (
+      response.response.generated_samples[0].video.uri
+      == 'gs://test-bucket/video1.mp4'
+  )
+
+  mock_requests_post.assert_called_once()
+  call_args, call_kwargs = mock_requests_post.call_args
+  assert 'fetchPredictOperation' in call_args[0]
+  assert call_kwargs['headers']['Authorization'] == 'Bearer mock-token'
+  assert call_kwargs['json'] == {'operationName': 'test_operation'}
+
+
+def test_fetch_operation_status_not_done(
+    mock_requests_post, mock_vertexai_fetch_status_request
+):
+  mock_response = mock.Mock()
+  mock_response.status_code = 200
+  mock_response.json.return_value = {'name': 'test_operation', 'done': False}
+  mock_requests_post.return_value = mock_response
+
+  response = vertexai_component.fetch_operation_status(
+      mock_vertexai_fetch_status_request, access_token='mock-token'
+  )
+
+  assert not response.done
+  assert response.name == 'test_operation'
+  assert response.response is None
+  mock_requests_post.assert_called_once()
