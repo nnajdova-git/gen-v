@@ -21,6 +21,7 @@ import pydantic
 
 class VeoAIModel(str, enum.Enum):
   """Enum of the various Veo AI models."""
+
   VEO_2_0_GENERATE_EXP = 'veo-2.0-generate-exp'
   VEO_1_PREVIEW_0815 = 'veo-001-preview-0815'
 
@@ -40,6 +41,7 @@ class VertexAIGenerateVideoRequest(pydantic.BaseModel):
       and 4.
     image: A base64-encoded image to use in the generated video.
   """
+
   prompt: str
   google_cloud_project_id: str
   google_cloud_storage_uri: str
@@ -87,6 +89,7 @@ class VertexAIGenerateVideoResponse(pydantic.BaseModel):
     operation_name: The name of the operation used to track the video generation
       process.
   """
+
   operation_name: str
 
 
@@ -97,6 +100,7 @@ class VertexAIVideo(pydantic.BaseModel):
     uri: The URI of the video.
     encoding: The encoding of the video.
   """
+
   uri: str
   encoding: str
 
@@ -107,6 +111,7 @@ class VertexAIVideoSample(pydantic.BaseModel):
   Attributes:
     video: The video sample.
   """
+
   video: VertexAIVideo
 
 
@@ -116,6 +121,7 @@ class VertexAIGeneratedSamples(pydantic.BaseModel):
   Attributes:
     samples: The list of generated video samples.
   """
+
   generated_samples: list[VertexAIVideoSample]
 
 
@@ -128,6 +134,7 @@ class VertexAIFetchVeoOperationStatusRequest(pydantic.BaseModel):
     google_cloud_region: The Google Cloud region to use.
     veo_model_id: The Veo AI model to use.
   """
+
   operation_name: str
   google_cloud_project_id: str
   google_cloud_region: str = 'us-central1'
@@ -142,6 +149,7 @@ class VertexAIFetchVeoOperationStatusResponse(pydantic.BaseModel):
     done: Whether the operation is done.
     response: The response from the operation, if it is done.
   """
+
   name: str
   done: bool = False
   response: VertexAIGeneratedSamples | None = None

@@ -48,7 +48,7 @@ def check_file_exists(
 def get_signed_url_from_gcs(
     bucket_name: str,
     file_name: str,
-    storage_client: storage.Client | None = None
+    storage_client: storage.Client | None = None,
 ) -> str:
   """Gets the signed URL to a file in Google Cloud Storage.
 

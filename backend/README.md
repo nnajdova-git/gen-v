@@ -65,6 +65,23 @@ installable dependency list (with hashes for security) is generated in
     pip-compile --generate-hashes --output-file=requirements_dev.txt requirements_dev.raw.txt
     ```
 
+## Code Quality and Formatting
+This project uses several tools to ensure code quality and consistent
+formatting:
+
+- Pylint: For static code analysis and linting. Run `pylint --recursive=y .` to
+  check your code. The Pylint configuration is in `.pylintrc`.
+- Pyink: For code formatting. Pyink is integrated as a pre-commit hook.
+
+### Pre-Commit Hooks
+This project uses pre-commit to automate code formatting before each commit.
+
+After installing the dev requirements run: `pre-commit install` to install the
+hook.
+
+You can run the hooks manually with `pre-commit run` if needed. This is useful
+for checking your changes before committing.
+
 ## Testing
 
 *   Tests are located in the `tests` directory.

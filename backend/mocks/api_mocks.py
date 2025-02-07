@@ -51,7 +51,7 @@ def mock_veo_operation_status_response(
   for i in range(num_of_videos):
     mock_video = api_models.Video(
         uri=f'gs://{gcs_bucket_name}/veo/generated/sample_{i}.mp4',
-        encoding='video/mp4'
+        encoding='video/mp4',
     )
     generated_video_samples.append(api_models.VideoSample(video=mock_video))
 

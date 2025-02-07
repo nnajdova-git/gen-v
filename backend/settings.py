@@ -28,6 +28,7 @@ class EnvSettings(pydantic_settings.BaseSettings):
     allowed_origin: The origin to allow CORS requests from.
     use_mocks: If set to "True", mock responses will be returned from the API.
   """
+
   host: str = '0.0.0.0'
   port: int = 8080
   allowed_origin: str = '*'

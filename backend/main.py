@@ -92,7 +92,7 @@ async def veo_operation_status(
   response = api_models.VeoGetOperationStatusResponse(**{
       'name': 'projects/PROJECT_ID/operations/OPERATION_ID',
       'done': False,
-      'response': None
+      'response': None,
   })
   return response
 

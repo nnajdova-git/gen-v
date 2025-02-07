@@ -22,6 +22,7 @@ class VeoGenerateVideoRequest(pydantic.BaseModel):
     prompt: The prompt to provide to Veo.
     image: A base64-encoded image to use in the generated video.
   """
+
   prompt: str
   image: str | None = None
 
@@ -33,6 +34,7 @@ class VeoGenerateVideoResponse(pydantic.BaseModel):
     operation_name: The name of the operation used to track the video generation
       process.
   """
+
   operation_name: str
 
 
@@ -43,6 +45,7 @@ class Video(pydantic.BaseModel):
     uri: The URI of the video.
     encoding: The encoding of the video.
   """
+
   uri: str
   encoding: str
 
@@ -53,6 +56,7 @@ class VideoSample(pydantic.BaseModel):
   Attributes:
       video: The video object.
   """
+
   video: Video
 
 
@@ -62,6 +66,7 @@ class GeneratedSamples(pydantic.BaseModel):
   Attributes:
       generated_samples: The list of video samples.
   """
+
   generated_samples: list[VideoSample]
 
 
@@ -71,6 +76,7 @@ class VeoGetOperationStatusRequest(pydantic.BaseModel):
   Attributes:
     operation_name: The name of the operation to get the status of.
   """
+
   operation_name: str
 
 
@@ -82,7 +88,7 @@ class VeoGetOperationStatusResponse(pydantic.BaseModel):
     done: Whether the operation is done.
     response: The response from the operation, if it is done.
   """
+
   name: str
   done: bool
   response: GeneratedSamples | None = None
-

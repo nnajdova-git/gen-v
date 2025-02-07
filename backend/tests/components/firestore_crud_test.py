@@ -28,6 +28,7 @@ def mock_db_fixture():
 def test_data_model_fixture():
   class TestDataModel(data_models.DataModel):
     test_field: str = 'test_value'
+
   return TestDataModel()
 
 
@@ -39,7 +40,8 @@ def test_create_document(mock_db, test_data_model):
       collection_name=collection_name,
       document_id=document_id,
       data=test_data_model,
-      db=mock_db)
+      db=mock_db,
+  )
   doc = mock_db.collection(collection_name).document(document_id).get()
   assert doc.exists
   assert doc.to_dict() == test_data_model.model_dump()
@@ -110,7 +112,8 @@ def test_query_collection(mock_db, test_data_model):
   results = firestore_crud.query_collection(
       collection_name=collection_name,
       model_type=type(test_data_model),
-      db=mock_db)
+      db=mock_db,
+  )
 
   assert len(results) == 3
   assert all(isinstance(result, type(test_data_model)) for result in results)

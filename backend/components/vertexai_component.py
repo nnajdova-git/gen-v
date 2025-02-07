@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
+# pylint: disable=line-too-long
 _VERTEX_AI_ENDPOINT = 'https://{region}-aiplatform.googleapis.com/v1/projects/{project_id}/locations/{region}/publishers/google/models/{model_id}:{task}'
 
 
@@ -90,7 +91,7 @@ def generate_video(
       'Authorization': f'Bearer {access_token}',
       'Content-Type': 'application/json; charset=utf-8',
   }
-  response = requests.post(url, json=payload, headers=headers)
+  response = requests.post(url, json=payload, headers=headers, timeout=60)
   response.raise_for_status()
   return vertexai_models.VertexAIGenerateVideoResponse(
       operation_name=response.json()['name'],
@@ -130,7 +131,7 @@ def fetch_operation_status(
       'Authorization': f'Bearer {access_token}',
       'Content-Type': 'application/json; charset=utf-8',
   }
-  response = requests.post(url, json=payload, headers=headers)
+  response = requests.post(url, json=payload, headers=headers, timeout=60)
   response.raise_for_status()
   return vertexai_models.VertexAIFetchVeoOperationStatusResponse(
       **response.json()

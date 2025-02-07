@@ -44,23 +44,24 @@ def test_vertexai_generate_video_request_with_invalid_sample_counts():
         prompt='A cat playing the piano',
         google_cloud_project_id='my-project',
         google_cloud_storage_uri='gs://my-bucket/my-folder',
-        sample_count=0
+        sample_count=0,
     )
   with pytest.raises(pydantic.ValidationError):
     vertexai_models.VertexAIGenerateVideoRequest(
         prompt='A cat playing the piano',
         google_cloud_project_id='my-project',
         google_cloud_storage_uri='gs://my-bucket/my-folder',
-        sample_count=5
+        sample_count=5,
     )
 
 
 def test_vertexai_generate_video_request_get_image_mime_type_valid():
+  # pylint: disable=line-too-long
   request = vertexai_models.VertexAIGenerateVideoRequest(
       prompt='A cat playing the piano',
       google_cloud_project_id='my-project',
       google_cloud_storage_uri='gs://my-bucket/my-folder',
-      image='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
+      image='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
   )
   assert request.get_image_mime_type() == 'image/png'
 
@@ -70,6 +71,6 @@ def test_vertexai_generate_video_request_get_image_mime_type_invalid():
       prompt='A cat playing the piano',
       google_cloud_project_id='my-project',
       google_cloud_storage_uri='gs://my-bucket/my-folder',
-      image='invalid-b64'
+      image='invalid-b64',
   )
   assert request.get_image_mime_type() is None

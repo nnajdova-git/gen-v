@@ -30,4 +30,5 @@ import pydantic
 
 class DataModel(pydantic.BaseModel):
   """Base class for all data models."""
+
   pass

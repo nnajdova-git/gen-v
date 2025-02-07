@@ -86,6 +86,7 @@ def test_generate_video_with_image(
 ):
   mock_post_request.return_value = mock_generate_video_response_200
 
+  # pylint: disable=line-too-long
   mock_vertexai_generate_video_request.image = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
   expected_mime_type = 'image/png'
 

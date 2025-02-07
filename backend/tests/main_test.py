@@ -43,13 +43,11 @@ def test_veo_generate_video_returns_correct_response(client):
 
 @mock.patch.object(api_mocks, 'mock_veo_generate_video_response', autospec=True)
 def test_veo_generate_video_returns_mock_response_with_use_mocks_true(
-    mock_veo_generate_response,
-    client
+    mock_veo_generate_response, client
 ):
   main.env_settings.use_mocks = True
   mock_veo_generate_response.return_value = mock.create_autospec(
-      spec=api_models.VeoGenerateVideoResponse,
-      instance=True
+      spec=api_models.VeoGenerateVideoResponse, instance=True
   )
 
   request = api_models.VeoGenerateVideoRequest(prompt='test prompt')
@@ -79,13 +77,11 @@ def test_veo_operation_status_returns_correct_response(client):
     api_mocks, 'mock_veo_operation_status_response', autospec=True
 )
 def test_veo_operation_status_returns_mock_response_with_use_mocks_true(
-    mock_veo_operation_status_response,
-    client
+    mock_veo_operation_status_response, client
 ):
   main.env_settings.use_mocks = True
   mock_veo_operation_status_response.return_value = mock.create_autospec(
-      spec=api_models.VeoGetOperationStatusResponse,
-      instance=True
+      spec=api_models.VeoGetOperationStatusResponse, instance=True
   )
 
   request = api_models.VeoGetOperationStatusRequest(

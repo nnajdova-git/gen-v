@@ -88,9 +88,7 @@ def test_add_image_clips_to_video_valid_inputs(
   assert os.path.exists(output_path)
 
 
-def test_add_image_clips_to_video_no_image_inputs(
-    sample_video, tmpdir
-):
+def test_add_image_clips_to_video_no_image_inputs(sample_video, tmpdir):
   """Tests the function with no image inputs."""
   output_path = os.path.join(tmpdir, 'output.mp4')
   image_inputs = []
