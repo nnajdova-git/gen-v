@@ -19,10 +19,13 @@ This file provides the routing for the backend application.
 import logging
 import sys
 
+from components import gcs_storage
+from components import vertexai_component
 import fastapi
 from fastapi.middleware import cors
 from mocks import api_mocks
 from models import api_models
+from models import vertexai_models
 import settings
 import uvicorn
 
@@ -88,13 +91,32 @@ async def veo_operation_status(
   if env_settings.use_mocks:
     logger.warning('Returning mock VeoGetOperationStatusResponse')
     return api_mocks.mock_veo_operation_status_response(request)
-  # TODO: b/389076463 - Add production logic
-  response = api_models.VeoGetOperationStatusResponse(**{
-      'name': 'projects/PROJECT_ID/operations/OPERATION_ID',
-      'done': False,
-      'response': None,
-  })
-  return response
+
+  vertexai_request = vertexai_models.VertexAIFetchVeoOperationStatusRequest(
+      operation_name=request.operation_name,
+      google_cloud_project_id=env_settings.vertexai_google_cloud_project_id,
+      google_cloud_region=env_settings.vertexai_google_cloud_region,
+      veo_model_id=vertexai_models.VeoAIModel.VEO_1_PREVIEW_0815,
+  )
+
+  vertexai_response = vertexai_component.fetch_operation_status(
+      vertexai_request
+  )
+  videos = []
+  if vertexai_response.done and vertexai_response.response:
+    for sample in vertexai_response.response.generated_samples:
+      bucket_name, object_name = gcs_storage.parse_gcs_uri(sample.video.uri)
+      signed_uri = gcs_storage.get_signed_url_from_gcs(bucket_name, object_name)
+      videos.append(
+          api_models.Video(
+              uri=sample.video.uri,
+              encoding=sample.video.encoding,
+              signed_uri=signed_uri,
+          )
+      )
+  return api_models.VeoGetOperationStatusResponse(
+      name=vertexai_response.name, done=vertexai_response.done, videos=videos
+  )
 
 
 if __name__ == '__main__':

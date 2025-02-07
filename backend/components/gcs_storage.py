@@ -14,6 +14,7 @@
 
 """Functions to handle storage operations."""
 import datetime
+import re
 from google.cloud import storage
 
 
@@ -113,3 +114,19 @@ def write_to_gcs(
   # See: https://docs.python.org/3/library/io.html
   with blob.open('w') as f:
     f.write(file_content)
+
+
+def parse_gcs_uri(uri: str) -> tuple[str, str] | None:
+  """Parses a GCS URI into bucket and object names.
+
+  Args:
+      uri: The GCS URI (e.g., "gs://my-bucket/path/to/object.txt").
+
+  Returns:
+      A tuple (bucket_name, object_name) if the URI is valid,
+      or None if the URI is invalid.
+  """
+  match = re.match(r'gs://([^/]+)/(.+)', uri)
+  if not match:
+    return None
+  return match.groups()

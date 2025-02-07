@@ -34,7 +34,6 @@ def mock_veo_generate_video_response() -> api_models.VeoGenerateVideoResponse:
 def mock_veo_operation_status_response(
     request: api_models.VeoGetOperationStatusRequest,
     gcs_bucket_name: str = 'mock-storage-bucket-name',
-    num_of_videos: int = 4,
 ) -> api_models.VeoGetOperationStatusResponse:
   """Returns a mock VeoGetOperationStatusResponse for testing.
 
@@ -42,23 +41,32 @@ def mock_veo_operation_status_response(
     request: The request object.
     gcs_bucket_name: If you wish to use a real Google Cloud Storage bucket, you
       can pass the name of the bucket here.
-    num_of_videos: How many videos should be returned in the response.
 
   Returns:
     A mock VeoGetOperationStatusResponse.
   """
-  generated_video_samples = []
-  for i in range(num_of_videos):
-    mock_video = api_models.Video(
-        uri=f'gs://{gcs_bucket_name}/veo/generated/sample_{i}.mp4',
-        encoding='video/mp4',
-    )
-    generated_video_samples.append(api_models.VideoSample(video=mock_video))
-
-  return api_models.VeoGetOperationStatusResponse(
-      name=request.operation_name,
-      done=True,
-      response=api_models.GeneratedSamples(
-          generated_samples=generated_video_samples
+  videos = [
+      api_models.Video(
+          uri=f'gs://{gcs_bucket_name}/veo/generated/sample_1.webm',
+          signed_uri='https://deepmind.google/api/blob/website/media/WM_140576931_2_video_1.webm',
+          encoding='video/webm',
       ),
+      api_models.Video(
+          uri=f'gs://{gcs_bucket_name}/veo/generated/sample_2.webm',
+          signed_uri='https://deepmind.google/api/blob/website/media/WM_140577976_61_video_0.webm',
+          encoding='video/webm',
+      ),
+      api_models.Video(
+          uri=f'gs://{gcs_bucket_name}/veo/generated/sample_3.webm',
+          signed_uri='https://deepmind.google/api/blob/website/media/WM_141324283_12_video_0.webm',
+          encoding='video/webm',
+      ),
+      api_models.Video(
+          uri=f'gs://{gcs_bucket_name}/veo/generated/sample_4.webm',
+          signed_uri='https://deepmind.google/api/blob/website/media/WM_141323922_10_video_0.webm',
+          encoding='video/webm',
+      ),
+  ]
+  return api_models.VeoGetOperationStatusResponse(
+      name=request.operation_name, done=True, videos=videos
   )

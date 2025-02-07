@@ -27,9 +27,14 @@ class EnvSettings(pydantic_settings.BaseSettings):
     port: The port to run the application on.
     allowed_origin: The origin to allow CORS requests from.
     use_mocks: If set to "True", mock responses will be returned from the API.
+    vertexai_google_cloud_project_id: The Google Cloud project ID to use for
+      requests to Vertex AI.
+    vertexai_google_cloud_region: The region to use with Vertex AI.
   """
 
   host: str = '0.0.0.0'
   port: int = 8080
   allowed_origin: str = '*'
   use_mocks: bool = False
+  vertexai_google_cloud_project_id: str = 'my-gcp-project'
+  vertexai_google_cloud_region: str = 'us-central1'

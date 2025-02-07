@@ -100,3 +100,30 @@ def test_write_to_gcs(mock_storage_client):
   mock_storage_client.bucket().blob().open.return_value.__enter__.return_value.write.assert_called_once_with(
       file_content
   )
+
+
+@pytest.mark.parametrize(
+    'uri, expected',
+    [
+        (
+            'gs://my-bucket/path/to/object.txt',
+            ('my-bucket', 'path/to/object.txt'),
+        ),
+        ('gs://another-bucket/object', ('another-bucket', 'object')),
+        ('gs://bucket-with-no-object/', None),
+        ('invalid-uri', None),
+        ('gs://', None),
+        (
+            'gs://bucket/object with spaces.txt',
+            ('bucket', 'object with spaces.txt'),
+        ),
+        (
+            'gs://bucket/object.with.dots.txt',
+            ('bucket', 'object.with.dots.txt'),
+        ),
+        ('gs://bucket/folder/object.txt', ('bucket', 'folder/object.txt')),
+    ],
+)
+def test_parse_gcs_uri(uri, expected):
+  result = gcs_storage.parse_gcs_uri(uri)
+  assert result == expected
