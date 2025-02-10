@@ -34,6 +34,17 @@ def patch_env_settings(monkeypatch):
   monkeypatch.setattr(main, 'env_settings', settings.EnvSettings())
 
 
+@pytest.fixture(name='mock_generate_video')
+def mock_generate_video_fixture():
+  with mock.patch(
+      'main.vertexai_component.generate_video', autospec=True
+  ) as mock_generate:
+    mock_generate.return_value = vertexai_models.VertexAIGenerateVideoResponse(
+        operation_name='projects/PROJECT_ID/operations/OPERATION_ID'
+    )
+    yield mock_generate
+
+
 @pytest.fixture(name='mock_fetch_operation_status')
 def mock_fetch_operation_status_fixture():
   with mock.patch(
@@ -72,13 +83,18 @@ def mock_parse_gcs_uri_fixture():
     yield mock_parse
 
 
-def test_veo_generate_video_returns_correct_response(client):
+def test_veo_generate_video_returns_correct_response(
+    client, mock_generate_video
+):
   request = api_models.VeoGenerateVideoRequest(prompt='test prompt')
   response = client.post(
       '/veo/generate', json=request.model_dump(exclude_unset=True)
   )
   assert response.status_code == 200
-  assert response.json() == {'operation_name': 'operation_name'}
+  assert response.json() == {
+      'operation_name': 'projects/PROJECT_ID/operations/OPERATION_ID'
+  }
+  mock_generate_video.assert_called_once()
 
 
 @mock.patch.object(api_mocks, 'mock_veo_generate_video_response', autospec=True)

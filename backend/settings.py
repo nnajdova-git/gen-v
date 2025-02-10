@@ -16,6 +16,7 @@
 To override the default settings, simply set environment variables accordingly,
 and they will be automatically picked up by the application.
 """
+from models import vertexai_models
 import pydantic_settings
 
 
@@ -30,6 +31,9 @@ class EnvSettings(pydantic_settings.BaseSettings):
     vertexai_google_cloud_project_id: The Google Cloud project ID to use for
       requests to Vertex AI.
     vertexai_google_cloud_region: The region to use with Vertex AI.
+    vertexai_veo_model: The Vertex AI VEO model to use.
+    google_cloud_storage_bucket_name: The name of the Google Cloud Storage
+      bucket to use throughout the application.
   """
 
   host: str = '0.0.0.0'
@@ -38,3 +42,7 @@ class EnvSettings(pydantic_settings.BaseSettings):
   use_mocks: bool = False
   vertexai_google_cloud_project_id: str = 'my-gcp-project'
   vertexai_google_cloud_region: str = 'us-central1'
+  vertexai_veo_model: vertexai_models.VeoAIModel = (
+      vertexai_models.VeoAIModel.VEO_1_PREVIEW_0815
+  )
+  google_cloud_storage_bucket_name: str = 'my-gcs-bucket'

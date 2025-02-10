@@ -64,8 +64,22 @@ async def veo_generate_video(
   if env_settings.use_mocks:
     logger.warning('Returning mock VeoGenerateVideoResponse')
     return api_mocks.mock_veo_generate_video_response()
-  # TODO: b/389076463 - Add production logic
-  return api_models.VeoGenerateVideoResponse(operation_name='operation_name')
+
+  google_cloud_storage_uri = (
+      f'gs://{env_settings.google_cloud_storage_bucket_name}'
+  )
+  vertexai_request = vertexai_models.VertexAIGenerateVideoRequest(
+      prompt=request.prompt,
+      google_cloud_project_id=env_settings.vertexai_google_cloud_project_id,
+      google_cloud_storage_uri=google_cloud_storage_uri,
+      google_cloud_region=env_settings.vertexai_google_cloud_region,
+      veo_model_id=env_settings.vertexai_veo_model,
+      image=request.image,
+  )
+  vertexai_response = vertexai_component.generate_video(vertexai_request)
+  return api_models.VeoGenerateVideoResponse(
+      operation_name=vertexai_response.operation_name
+  )
 
 
 @app.post('/veo/operation/status')
@@ -96,7 +110,7 @@ async def veo_operation_status(
       operation_name=request.operation_name,
       google_cloud_project_id=env_settings.vertexai_google_cloud_project_id,
       google_cloud_region=env_settings.vertexai_google_cloud_region,
-      veo_model_id=vertexai_models.VeoAIModel.VEO_1_PREVIEW_0815,
+      veo_model_id=env_settings.vertexai_veo_model,
   )
 
   vertexai_response = vertexai_component.fetch_operation_status(
