@@ -80,12 +80,20 @@ describe('VeoVideoDisplayComponent', () => {
     const mockResponse: VeoGetOperationStatusResponse = {
       name: operationName,
       done: true,
-      response: {
-        generated_samples: [
-          {video: {uri: 'test-uri-1', encoding: 'video/mp4'}},
-          {video: {uri: 'test-uri-2', encoding: 'video/mp4'}},
-        ],
-      },
+      videos: [
+        {
+          uri: 'test-uri-1',
+          encoding: 'video/mp4',
+          signed_uri:
+            'https://storage.googleapis.com/mock-bucket/mock-object1?signature=1234',
+        },
+        {
+          uri: 'test-uri-2',
+          encoding: 'video/mp4',
+          signed_uri:
+            'https://storage.googleapis.com/mock-bucket/mock-object2?signature=1234',
+        },
+      ],
     };
 
     apiService.startPollingVeoOperationStatus.and.returnValue(of(mockResponse));
@@ -98,7 +106,7 @@ describe('VeoVideoDisplayComponent', () => {
     fixture.detectChanges();
 
     expect(component.isLoading).toBeFalse();
-    expect(component.videos).toEqual(mockResponse.response);
+    expect(component.videos).toEqual(mockResponse.videos);
 
     const videoElements = fixture.debugElement.queryAll(By.css('video'));
     expect(videoElements.length).toBe(2);

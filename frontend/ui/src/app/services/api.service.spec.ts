@@ -94,24 +94,17 @@ describe('ApiService', () => {
     const mockResponse: VeoGetOperationStatusResponse = {
       name: mockOperationName,
       done: true,
-      response: {
-        generated_samples: [
-          {
-            video: {
-              uri: 'gs://BUCKET_NAME/TIMESTAMPED_FOLDER/sample_0.mp4',
-              encoding: 'video/mp4',
-            },
-          },
-        ],
-      },
+      videos: [{
+        uri: 'gs://BUCKET_NAME/TIMESTAMPED_FOLDER/sample_0.mp4',
+        encoding: 'video/mp4',
+        signed_uri: 'https://storage.googleapis.com/mock-bucket/mock-object2?signature=1234',
+      }]
     };
 
     service.getVeoOperationStatus(mockRequest).subscribe((response) => {
       expect(response.name).toEqual(mockResponse.name);
       expect(response.done).toEqual(mockResponse.done);
-      expect(response.response?.generated_samples).toEqual(
-        mockResponse.response?.generated_samples,
-      );
+      expect(response.videos).toEqual(mockResponse.videos);
     });
 
     const req = httpMock.expectOne(
@@ -129,13 +122,13 @@ describe('ApiService', () => {
     const mockResponse: VeoGetOperationStatusResponse = {
       name: mockOperationName,
       done: false,
-      response: null,
+      videos: null,
     };
 
     service.getVeoOperationStatus(mockRequest).subscribe((response) => {
       expect(response.name).toEqual(mockResponse.name);
       expect(response.done).toEqual(mockResponse.done);
-      expect(response.response).toBeNull();
+      expect(response.videos).toBeNull();
     });
 
     const req = httpMock.expectOne(
@@ -158,16 +151,16 @@ describe('ApiService', () => {
   it('startPollingVeoOperationStatus should poll for operation status and update veoOperationStatus$', fakeAsync(() => {
     const mockOperationName = 'test-operation-name';
     const mockResponses: VeoGetOperationStatusResponse[] = [
-      {name: mockOperationName, done: false, response: null},
-      {name: mockOperationName, done: false, response: null},
+      {name: mockOperationName, done: false, videos: null},
+      {name: mockOperationName, done: false, videos: null},
       {
         name: mockOperationName,
         done: true,
-        response: {
-          generated_samples: [
-            {video: {uri: 'test-uri', encoding: 'video/mp4'}},
-          ],
-        },
+        videos: [{
+          uri: 'gs://BUCKET_NAME/TIMESTAMPED_FOLDER/sample_0.mp4',
+          encoding: 'video/mp4',
+          signed_uri: 'https://storage.googleapis.com/mock-bucket/mock-object2?signature=1234',
+        }]
       },
     ];
 
@@ -207,7 +200,7 @@ describe('ApiService', () => {
     const intervalMs = 50;
 
     spyOn(service, 'getVeoOperationStatus').and.returnValue(
-      of({name: mockOperationName, done: false, response: null}),
+      of({name: mockOperationName, done: false, videos: null}),
     );
 
     const statusUpdates: VeoGetOperationStatusResponse[] = [];

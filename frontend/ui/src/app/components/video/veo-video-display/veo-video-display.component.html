@@ -21,9 +21,9 @@
   </div>
   <div *ngIf="!isLoading">
     <mat-grid-list cols="4" gutterSize="20px">
-      <mat-grid-tile *ngFor="let videoSample of videos?.generated_samples">
+      <mat-grid-tile *ngFor="let video of videos">
         <video class="veo-video-display__video" controls>
-          <source [src]="videoSample.video.uri" [type]="videoSample.video.encoding" />
+          <source [src]="video.signed_uri" [type]="video.encoding" />
           Your browser does not support the video tag.
         </video>
       </mat-grid-tile>

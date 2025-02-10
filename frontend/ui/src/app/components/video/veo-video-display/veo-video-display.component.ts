@@ -26,10 +26,7 @@ import {MatGridList, MatGridTile} from '@angular/material/grid-list';
 import {MatProgressSpinner} from '@angular/material/progress-spinner';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {Subscription} from 'rxjs';
-import {
-  GeneratedSamples,
-  VeoGetOperationStatusResponse,
-} from '../../../models/api.models';
+import {VeoGetOperationStatusResponse, Video} from '../../../models/api.models';
 import {SnackbarType} from '../../../models/material-design.enums';
 import {ApiService} from '../../../services/api.service';
 
@@ -56,7 +53,7 @@ export class VeoVideoDisplayComponent implements OnInit, OnDestroy {
   /**
    * The videos generated that need to be displayed to the user.
    */
-  videos: GeneratedSamples | null = null;
+  videos: Video[] | null = null;
   /**
    * The name of the current Veo operation.
    */
@@ -123,7 +120,7 @@ export class VeoVideoDisplayComponent implements OnInit, OnDestroy {
             .subscribe({
               next: (response: VeoGetOperationStatusResponse) => {
                 this.isLoading = !response.done;
-                this.videos = response.response;
+                this.videos = response.videos;
               },
               error: (error: Error) => {
                 this.isLoading = false;

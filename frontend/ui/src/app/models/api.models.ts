@@ -56,26 +56,10 @@ export interface Video {
    * The encoding of the video.
    */
   encoding: string;
-}
-
-/**
- * Represents a single video sample in the operation status response.
- */
-export interface VideoSample {
   /**
-   * The video object.
+   * The signed URL for accessing the video.
    */
-  video: Video;
-}
-
-/**
- * Represents a list of videos in the operation status response.
- */
-export interface GeneratedSamples {
-  /**
-   * The list of video samples.
-   */
-  generated_samples: VideoSample[];
+  signed_uri: string;
 }
 
 /**
@@ -101,7 +85,7 @@ export interface VeoGetOperationStatusResponse {
    */
   done: boolean;
   /**
-   * The response from the operation, if it is done.
+   * The list of videos, if the operation is done.
    */
-  response: GeneratedSamples | null;
+  videos: Video[] | null;
 }
