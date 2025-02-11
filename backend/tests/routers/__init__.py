@@ -11,22 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for main.py."""
-
-import fastapi
-from fastapi import routing
-import main
-
-
-def test_app_creation():
-  """Test that the FastAPI app is created."""
-  assert isinstance(main.app, fastapi.FastAPI)
-
-
-def test_router_inclusion():
-  """Test that routers are included in the app."""
-  assert any(
-      route.path == '/veo/generate'
-      for route in main.app.routes
-      if isinstance(route, routing.APIRoute)
-  )
