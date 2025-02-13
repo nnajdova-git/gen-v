@@ -30,3 +30,8 @@ def test_router_inclusion():
       for route in main.app.routes
       if isinstance(route, routing.APIRoute)
   )
+  assert any(
+      route.path == '/assets/images'
+      for route in main.app.routes
+      if isinstance(route, routing.APIRoute)
+  )

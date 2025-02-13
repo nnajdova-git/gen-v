@@ -21,6 +21,7 @@ import sys
 
 import fastapi
 from fastapi.middleware import cors
+from routers import assets
 from routers import veo
 import settings
 import uvicorn
@@ -44,6 +45,7 @@ app.add_middleware(
 )
 
 app.include_router(veo.router, prefix='/veo')
+app.include_router(assets.router, prefix='/assets')
 
 
 if __name__ == '__main__':
