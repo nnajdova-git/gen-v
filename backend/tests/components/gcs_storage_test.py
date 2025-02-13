@@ -95,7 +95,7 @@ def test_write_to_gcs(mock_storage_client):
   gcs_storage.write_to_gcs(
       file_content, 'test_bucket', 'test_file.mp4', mock_storage_client
   )
-  mock_storage_client.bucket().blob().open.assert_called_once_with('w')
+  mock_storage_client.bucket().blob().open.assert_called_once_with('wb')
   # pylint: disable=line-too-long
   mock_storage_client.bucket().blob().open.return_value.__enter__.return_value.write.assert_called_once_with(
       file_content

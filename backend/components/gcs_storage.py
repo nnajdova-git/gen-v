@@ -112,7 +112,7 @@ def write_to_gcs(
   blob = bucket.blob(file_name)
   # Mode can be specified as wb/rb for bytes mode.
   # See: https://docs.python.org/3/library/io.html
-  with blob.open('w') as f:
+  with blob.open('wb') as f:
     f.write(file_content)
 
 
