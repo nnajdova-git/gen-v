@@ -34,6 +34,7 @@ class EnvSettings(pydantic_settings.BaseSettings):
     vertexai_veo_model: The Vertex AI VEO model to use.
     google_cloud_storage_bucket_name: The name of the Google Cloud Storage
       bucket to use throughout the application.
+    firestore_db_name: The name of the database in Firestore.
   """
 
   host: str = '0.0.0.0'
@@ -46,3 +47,4 @@ class EnvSettings(pydantic_settings.BaseSettings):
       vertexai_models.VeoAIModel.VEO_1_PREVIEW_0815
   )
   google_cloud_storage_bucket_name: str = 'my-gcs-bucket'
+  firestore_db_name: str = 'gen-v'
