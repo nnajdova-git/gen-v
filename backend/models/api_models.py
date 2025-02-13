@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """The model definitions for the backend API."""
+import enum
+import os
+import constants
+import fastapi
 import pydantic
 
 
@@ -74,3 +78,51 @@ class VeoGetOperationStatusResponse(pydantic.BaseModel):
   name: str
   done: bool
   videos: list[Video] | None = None
+
+
+class ImageSource(str, enum.Enum):
+  """Enum for the types of image that can be uploaded."""
+
+  BRAND = 'Brand'
+  IMAGEN = 'Imagen'
+
+
+class UploadImageRequest(pydantic.BaseModel):
+  """Represents a request to the upload image asset API.
+
+  Attributes:
+      image: The image file to be uploaded.
+      source: The source of the image.
+      session_id: If this belongs to a session, provide the session ID,
+          else if None it will be a global asset.
+      image_name: Optional user-provided name for the image.
+      context: Optional context description for the image.
+  """
+
+  image: fastapi.UploadFile
+  source: ImageSource
+  session_id: str | None = None
+  image_name: str | None = None
+  context: str | None = None
+
+  @classmethod
+  @pydantic.field_validator('image')
+  def validate_image_type(cls, value):
+    _, extension = os.path.splitext(value.filename)
+    if extension.lower() not in constants.ALLOWED_IMAGE_EXTENSIONS:
+      raise ValueError('Invalid image type')
+    return value
+
+
+class UploadImageResponse(pydantic.BaseModel):
+  """Represents the response from the image upload asset API.
+
+  Attributes:
+    image_id: The unique ID of the uploaded image.
+    message: A success message.
+    location: The URL to access the uploaded image.
+  """
+
+  image_id: str
+  message: str
+  location: str

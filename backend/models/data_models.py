@@ -25,6 +25,7 @@ These models are used for data validation, serialization, and type hinting
 throughout, the application.  They help ensure data integrity and improve code
 maintainability.
 """
+import datetime
 import pydantic
 
 
@@ -32,3 +33,34 @@ class DataModel(pydantic.BaseModel):
   """Base class for all data models."""
 
   pass
+
+
+class Image(DataModel):
+  """Represents an image document stored in Firestore.
+
+  Attributes:
+    bucket_name: The name of the Google Cloud Storage bucket where the image is
+      stored.
+    file_path: The path on the bucket to the image file.
+    file_name: The original filename of the uploaded image.
+    original_file_name: The name of the original file.
+    full_gcs_path: The full Google Cloud Storage path to the image, e.g.
+      "gs://path/to/image/my-image.png".
+    source: The source of the image (e.g., "Brand", "Imagen").  Stored as
+        the string value of the ImageSource enum.
+    image_name: Optional user-provided name for the image.
+    context: Optional context description for the image.
+    date_created: The datetime that this was created.
+  """
+
+  bucket_name: str
+  file_path: str
+  file_name: str
+  original_file_name: str
+  full_gcs_path: str
+  source: str
+  image_name: str | None = None
+  context: str | None = None
+  date_created: datetime.datetime = pydantic.Field(
+      default_factory=datetime.datetime.now
+  )
