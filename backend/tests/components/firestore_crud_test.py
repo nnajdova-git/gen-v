@@ -13,15 +13,21 @@
 # limitations under the License.
 """Unit tests for firestore_crud.py."""
 
+import unittest.mock
+
 from components import firestore_crud
 import mockfirestore
 from models import data_models
 import pytest
 
 
-@pytest.fixture(name='mock_db')
-def mock_db_fixture():
-  return mockfirestore.MockFirestore()
+@pytest.fixture(name='mock_firestore_client')
+def mock_firestore_client_fixture():
+  mock_db = mockfirestore.MockFirestore()
+  with unittest.mock.patch(
+      'google.cloud.firestore.Client', return_value=mock_db
+  ) as mock_client:
+    yield mock_client, mock_db
 
 
 @pytest.fixture(name='test_data_model')
@@ -32,7 +38,13 @@ def test_data_model_fixture():
   return TestDataModel()
 
 
-def test_create_document(mock_db, test_data_model):
+@pytest.mark.parametrize(
+    'database_name',
+    ['test-database', None],
+)
+def test_create_document(mock_firestore_client, test_data_model, database_name):
+  mock_client, mock_db = mock_firestore_client
+
   collection_name = 'test_collection'
   document_id = 'test_document'
 
@@ -40,14 +52,20 @@ def test_create_document(mock_db, test_data_model):
       collection_name=collection_name,
       document_id=document_id,
       data=test_data_model,
-      db=mock_db,
+      database_name=database_name,
   )
   doc = mock_db.collection(collection_name).document(document_id).get()
   assert doc.exists
   assert doc.to_dict() == test_data_model.model_dump()
+  mock_client.assert_called_once_with(database=database_name)
 
 
-def test_get_document(mock_db, test_data_model):
+@pytest.mark.parametrize(
+    'database_name',
+    ['test-database', None],
+)
+def test_get_document(mock_firestore_client, test_data_model, database_name):
+  mock_client, mock_db = mock_firestore_client
   collection_name = 'test_collection'
   document_id = 'test_document'
 
@@ -58,14 +76,20 @@ def test_get_document(mock_db, test_data_model):
       collection_name=collection_name,
       document_id=document_id,
       model_type=type(test_data_model),
-      db=mock_db,
+      database_name=database_name,
   )
 
   assert retrieved_data is not None
   assert retrieved_data == test_data_model
+  mock_client.assert_called_once_with(database=database_name)
 
 
-def test_update_document(mock_db, test_data_model):
+@pytest.mark.parametrize(
+    'database_name',
+    ['test-database', None],
+)
+def test_update_document(mock_firestore_client, test_data_model, database_name):
+  mock_client, mock_db = mock_firestore_client
   collection_name = 'test_collection'
   document_id = 'test_document'
 
@@ -78,14 +102,20 @@ def test_update_document(mock_db, test_data_model):
       collection_name=collection_name,
       document_id=document_id,
       data=updated_data,
-      db=mock_db,
+      database_name=database_name,
   )
 
   doc = mock_db.collection(collection_name).document(document_id).get()
   assert doc.to_dict()['test_field'] == 'new_value'
+  mock_client.assert_called_once_with(database=database_name)
 
 
-def test_delete_document(mock_db, test_data_model):
+@pytest.mark.parametrize(
+    'database_name',
+    ['test-database', None],
+)
+def test_delete_document(mock_firestore_client, test_data_model, database_name):
+  mock_client, mock_db = mock_firestore_client
   collection_name = 'test_collection'
   document_id = 'test_document'
 
@@ -94,14 +124,24 @@ def test_delete_document(mock_db, test_data_model):
   )
 
   firestore_crud.delete_document(
-      collection_name=collection_name, document_id=document_id, db=mock_db
+      collection_name=collection_name,
+      document_id=document_id,
+      database_name=database_name,
   )
 
   doc = mock_db.collection(collection_name).document(document_id).get()
   assert not doc.exists
+  mock_client.assert_called_once_with(database=database_name)
 
 
-def test_query_collection(mock_db, test_data_model):
+@pytest.mark.parametrize(
+    'database_name',
+    ['test-database', None],
+)
+def test_query_collection(
+    mock_firestore_client, test_data_model, database_name
+):
+  mock_client, mock_db = mock_firestore_client
   collection_name = 'test_collection'
 
   for i in range(3):
@@ -112,8 +152,9 @@ def test_query_collection(mock_db, test_data_model):
   results = firestore_crud.query_collection(
       collection_name=collection_name,
       model_type=type(test_data_model),
-      db=mock_db,
+      database_name=database_name,
   )
 
   assert len(results) == 3
   assert all(isinstance(result, type(test_data_model)) for result in results)
+  mock_client.assert_called_once_with(database=database_name)
