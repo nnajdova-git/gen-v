@@ -20,8 +20,12 @@ Subclasses of data_models.DataModel are expected as inputs, to ensure that the
 data is validated before being written to Firestore, and for consistent handling
 between the backend and data layer.
 """
+from typing import TypeVar, Type
 from google.cloud import firestore
 from models import data_models
+
+# Type variable for Pydantic models representing Firestore documents.
+DocumentModel = TypeVar('DocumentModel', bound=data_models.DataModel)
 
 
 def create_document(
@@ -55,10 +59,10 @@ def create_document(
 def get_document(
     collection_name: str,
     document_id: str,
-    model_type: data_models.DataModel,
+    model_type: Type[DocumentModel],
     database_name: str | None = None,
     db: firestore.Client | None = None,
-) -> str:
+) -> DocumentModel | None:
   """Gets a document from Firestore and returns it as a Pydantic model.
 
   Args:
@@ -86,7 +90,7 @@ def get_document(
 def update_document(
     collection_name: str,
     document_id: str,
-    data: data_models.DataModel,
+    data: Type[DocumentModel],
     database_name: str | None = None,
     db: firestore.Client | None = None,
 ) -> None:
@@ -133,13 +137,13 @@ def delete_document(
 
 def query_collection(
     collection_name: str,
-    model_type: data_models.DataModel,
+    model_type: Type[DocumentModel],
     query_field: str | None = None,
     query_operator: str | None = None,
     query_value: str | None = None,
     database_name: str | None = None,
     db: firestore.Client | None = None,
-) -> list[data_models.DataModel]:
+) -> list[DocumentModel]:
   """Queries a Firestore collection and returns a list of Pydantic models.
 
   Args:
