@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """The model definitions for the backend API."""
+import datetime
 import enum
 import os
 import constants
@@ -126,3 +127,22 @@ class UploadImageResponse(pydantic.BaseModel):
   image_id: str
   message: str
   location: str
+
+
+class ImageMetadataResponse(pydantic.BaseModel):
+  """Represents the response from the get image metadata API.
+
+  Attributes:
+    source: The source of the image (e.g., "Brand", "Imagen"). Stored as the
+      string value of the ImageSource enum.
+    image_name: Optional user-provided name for the image.
+    context: Optional context description for the image.
+    date_created: The datetime that this was created.
+    signed_url: A signed URL to the file on GCS.
+  """
+
+  source: str
+  image_name: str | None = None
+  context: str | None = None
+  date_created: datetime.datetime
+  signed_url: str

@@ -77,3 +77,29 @@ async def upload_image(
       message='Image uploaded successfully!',
       location=f'/images/{image_id}',
   )
+
+
+@router.get('/images/{image_id}')
+async def get_image_by_id(image_id: str) -> api_models.ImageMetadataResponse:
+  """Fetch image with the specified image_id.
+
+  Args:
+    image_id: The ID of the image, which is the name of the Firestore document.
+
+  Returns:
+    The image metadata with signed URL.
+    Raises 404 HTTPException if image is not found.
+  """
+  image_metadata = asset_utils.get_image_metadata_with_signed_url(
+      image_id=image_id
+  )
+  if not image_metadata:
+    raise fastapi.HTTPException(status_code=404, detail='Image not found')
+
+  return api_models.ImageMetadataResponse(
+      source=image_metadata.source,
+      image_name=image_metadata.image_name,
+      context=image_metadata.context,
+      date_created=image_metadata.date_created,
+      signed_url=image_metadata.signed_url,
+  )
