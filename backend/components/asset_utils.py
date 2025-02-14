@@ -17,9 +17,11 @@ This module provides helper functions for uploading and managing various asset
 types, including images, videos, and audio.
 """
 import logging
+import types
 from components import firestore_crud
 from components import gcs_storage
 import constants
+from mocks import asset_mocks
 from models import asset_models
 from models import data_models
 import settings
@@ -76,3 +78,46 @@ def upload_image_asset(
   )
   # TODO: b/396329773 - update session document if a session_id is provided.
   return document_id
+
+
+def get_image_metadata_with_signed_url(
+    image_id: str,
+    firestore_utils: types.ModuleType | None = None,
+    storage_utils: types.ModuleType | None = None,
+    mocks_module: types.ModuleType | None = None,
+) -> asset_models.ImageMetadataResult | None:
+  """Fetches image metadata from Firestore and generates a signed URL.
+
+  Args:
+    image_id: The ID of the image document in Firestore.
+    firestore_utils: The module for Firestore operations (defaults to
+      firestore_crud). Primarily, used for dependency injection in testing.
+    storage_utils: The module for GCS operations (defaults to gcs_storage).
+      Primarily, used for dependency injection in testing.
+    mocks_module: The module used for pulling the mocks (defaults to
+      asset_mocks). Primarily, used for dependency injection in testing.
+
+  Returns:
+    The image metadata with a signed URL, or None if not found.
+  """
+  if env_settings.use_mocks:
+    mocks_module = mocks_module or asset_mocks
+    return mocks_module.mock_get_image_metadata_with_signed_url(image_id)
+
+  firestore_utils = firestore_utils or firestore_crud
+  storage_utils = storage_utils or gcs_storage
+
+  image_doc = firestore_utils.get_document(
+      collection_name=constants.FirestoreCollections.IMAGES,
+      document_id=image_id,
+      model_type=data_models.Image,
+      database_name=env_settings.firestore_db_name,
+  )
+  if not image_doc:
+    return None
+
+  image_metadata_response = asset_models.ImageMetadataResult(
+      **image_doc.model_dump()
+  )
+  image_metadata_response.generate_signed_url(storage_utils)
+  return image_metadata_response

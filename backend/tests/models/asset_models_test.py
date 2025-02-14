@@ -13,8 +13,10 @@
 # limitations under the License.
 """Unit tests for asset_models.py."""
 
+import datetime
 import unittest.mock
 
+from components import gcs_storage
 import fastapi
 from models import asset_models
 import pytest
@@ -76,3 +78,29 @@ def test_get_file_extension(filename, expected_extension):
       source='Brand',
   )
   assert input_data.get_file_extension() == expected_extension
+
+
+def test_image_metadata_result_generate_signed_url():
+  mock_storage_utils = unittest.mock.Mock(spec=gcs_storage)
+  mock_signed_url = 'https://example.com/mock-signed-url'
+  mock_storage_utils.get_signed_url_from_gcs.return_value = mock_signed_url
+
+  image_metadata = asset_models.ImageMetadataResult(
+      bucket_name='test-bucket',
+      file_path='images/test-image.jpg',
+      file_name='test-image.jpg',
+      original_file_name='original.jpg',
+      full_gcs_path='gs://test-bucket/images/test-image.jpg',
+      source='Brand',
+      image_name='Test Image',
+      context='Test Context',
+      date_created=datetime.datetime(2024, 1, 1, 12, 0, 0),
+      signed_url='',
+  )
+
+  image_metadata.generate_signed_url(storage_utils=mock_storage_utils)
+
+  mock_storage_utils.get_signed_url_from_gcs.assert_called_once_with(
+      bucket_name='test-bucket', file_name='images/test-image.jpg'
+  )
+  assert image_metadata.signed_url == mock_signed_url

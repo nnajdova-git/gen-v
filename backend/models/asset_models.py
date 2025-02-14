@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """The model definitions for the assets."""
+
+import datetime
 import os
+import types
+
+from components import gcs_storage
 import constants
 import fastapi
 from models import api_models
@@ -57,3 +62,48 @@ class ImageUploadInput(pydantic.BaseModel):
     """
     _, extension = os.path.splitext(self.image.filename)
     return extension.lower()
+
+
+class ImageMetadataResult(pydantic.BaseModel):
+  """Represents the metadata of an image with signed URL.
+
+  Attributes:
+    bucket_name: The name of the Google Cloud Storage bucket where the image is
+      stored.
+    file_path: The path on the bucket to the image file.
+    file_name: The original filename of the uploaded image.
+    original_file_name: The name of the original file.
+    full_gcs_path: The full Google Cloud Storage path to the image, e.g.
+      "gs://path/to/image/my-image.png".
+    source: The source of the image (e.g., "Brand", "Imagen"). Stored as the
+      string value of the ImageSource enum.
+    image_name: Optional user-provided name for the image.
+    context: Optional context description for the image.
+    date_created: The datetime that this was created.
+    signed_url: A signed URL to the file on GCS.
+  """
+
+  bucket_name: str
+  file_path: str
+  file_name: str
+  original_file_name: str
+  full_gcs_path: str
+  source: str
+  image_name: str | None = None
+  context: str | None = None
+  date_created: datetime.datetime
+  signed_url: str = ''
+
+  def generate_signed_url(
+      self, storage_utils: types.ModuleType | None = None
+  ) -> None:
+    """Generates and adds the signed URL to this object.
+
+    Args:
+      storage_utils: The module for GCS operations (defaults to gcs_storage).
+        Primarily, used for dependency injection in testing.
+    """
+    storage_utils = storage_utils or gcs_storage
+    self.signed_url = storage_utils.get_signed_url_from_gcs(
+        bucket_name=self.bucket_name, file_name=self.file_path
+    )
