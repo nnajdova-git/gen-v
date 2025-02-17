@@ -31,3 +31,14 @@ class ImageInput(pydantic.BaseModel):
   position: tuple[str | int, str | int] = ('right', 'top')
   duration: float | None = None
   height: int | None = None
+
+
+class VideoInput(pydantic.BaseModel):
+  """Represents a video clip.
+
+  Attributes:
+    path: Path to the video file.
+  """
+
+  path: str
+

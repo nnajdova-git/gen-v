@@ -111,3 +111,33 @@ def add_image_clips_to_video(
     for image_clip in image_clips:
       image_clip.close()
     final_clip.close()
+
+
+def concatenate_video_clips(
+    video_inputs: list[media.VideoInput], output_path: str
+) -> None:
+  """Concatenates multiple video clips together.
+
+  Args:
+      video_inputs: List of paths to the video files.
+      output_path: Path to save the output video.
+
+  Raises:
+      FileNotFoundError: If any video file is not found.
+  """
+  if not video_inputs:
+    raise ValueError('No video inputs provided.')
+
+  video_clips = []
+
+  for video_input in video_inputs:
+    check_file_exists(video_input.path)
+    video_clips.append(moviepy.VideoFileClip(video_input.path))
+
+  final_clip = moviepy.concatenate_videoclips(video_clips)
+  final_clip.write_videofile(output_path, codec='libx264')
+
+  for video_clip in video_clips:
+    video_clip.close()
+  final_clip.close()
+

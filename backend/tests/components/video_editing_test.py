@@ -35,13 +35,17 @@ def fixture_sample_images(tmpdir):
   return image_paths
 
 
-@pytest.fixture(name='sample_video')
+@pytest.fixture(name='sample_videos_paths')
 def fixture_sample_video(tmpdir):
-  video_path = os.path.join(tmpdir, 'test_video.mp4')
-  clip = moviepy.ColorClip(size=(100, 100), color=(255, 0, 0), duration=5)
-  clip.write_videofile(video_path, fps=24, codec='libx264')
-  clip.close()
-  return video_path
+  """Creates a few sample videos for testing."""
+  video_paths = []
+  for i in range(3):
+    video_path = os.path.join(tmpdir, f'test_video{i}.mp4')
+    clip = moviepy.ColorClip(size=(100, 100), color=(255, 0, 0), duration=5)
+    clip.write_videofile(video_path, fps=24, codec='libx264')
+    video_paths.append(video_path)
+    clip.close()
+  return video_paths
 
 
 def test_check_file_exists_failure():
@@ -62,7 +66,7 @@ def test_image_rescaling(sample_images_paths):
 
 
 def test_add_image_clips_to_video_valid_inputs(
-    sample_video, sample_images_paths, tmpdir
+    sample_videos_paths, sample_images_paths, tmpdir
 ):
   """Tests the function with valid inputs, including image resizing."""
   output_path = os.path.join(tmpdir, 'output.mp4')
@@ -82,24 +86,24 @@ def test_add_image_clips_to_video_valid_inputs(
   ]
 
   video_editing.add_image_clips_to_video(
-      sample_video, image_inputs, output_path
+      sample_videos_paths[0], image_inputs, output_path
   )
 
   assert os.path.exists(output_path)
 
 
-def test_add_image_clips_to_video_no_image_inputs(sample_video, tmpdir):
+def test_add_image_clips_to_video_no_image_inputs(sample_videos_paths, tmpdir):
   """Tests the function with no image inputs."""
   output_path = os.path.join(tmpdir, 'output.mp4')
   image_inputs = []
   with pytest.raises(ValueError, match='No image inputs provided.'):
     video_editing.add_image_clips_to_video(
-        sample_video, image_inputs, output_path
+        sample_videos_paths[0], image_inputs, output_path
     )
 
 
 def test_add_image_clips_no_resize_default_duration(
-    sample_video, sample_images_paths, tmpdir
+    sample_videos_paths, sample_images_paths, tmpdir
 ):
   """Tests with no resizing and using the video's duration for image clips."""
   output_path = os.path.join(tmpdir, 'output_noresize.mp4')
@@ -110,14 +114,14 @@ def test_add_image_clips_no_resize_default_duration(
   ]
 
   video_editing.add_image_clips_to_video(
-      sample_video, image_inputs, output_path
+      sample_videos_paths[0], image_inputs, output_path
   )
 
   assert os.path.exists(output_path)
 
 
 def test_add_image_clips_single_frame_image(
-    sample_video, sample_images_paths, tmpdir
+    sample_videos_paths, sample_images_paths, tmpdir
 ):
   """Tests with an image clip duration of zero or a very small value."""
   output_path = os.path.join(tmpdir, 'output_single_frame.mp4')
@@ -130,14 +134,14 @@ def test_add_image_clips_single_frame_image(
   ]
 
   video_editing.add_image_clips_to_video(
-      sample_video, image_inputs, output_path
+      sample_videos_paths[0], image_inputs, output_path
   )
 
   assert os.path.exists(output_path)
 
 
 def test_add_image_clips_multiple_resizes(
-    sample_video, sample_images_paths, tmpdir
+    sample_videos_paths, sample_images_paths, tmpdir
 ):
   """Tests resizing multiple images with different target heights."""
   output_path = os.path.join(tmpdir, 'output_multiple_resizes.mp4')
@@ -152,7 +156,28 @@ def test_add_image_clips_multiple_resizes(
   ]
 
   video_editing.add_image_clips_to_video(
-      sample_video, image_inputs, output_path
+      sample_videos_paths[0], image_inputs, output_path
   )
 
   assert os.path.exists(output_path)
+
+
+def test_concatenate_video_clips(sample_videos_paths, tmpdir):
+  """Tests concatenating multiple video clips."""
+  output_path = os.path.join(tmpdir, 'concatenated_video.mp4')
+  video_clips = [
+      media.VideoInput(path=sample_video)
+      for sample_video in sample_videos_paths
+  ]
+
+  video_editing.concatenate_video_clips(video_clips, output_path)
+
+  assert os.path.exists(output_path)
+
+
+def test_concatenate_video_clips_no_video_inputs(tmpdir):
+  """Tests the function with no video inputs."""
+  output_path = os.path.join(tmpdir, 'output.mp4')
+  video_inputs = []
+  with pytest.raises(ValueError, match='No video inputs provided.'):
+    video_editing.concatenate_video_clips(video_inputs, output_path)
