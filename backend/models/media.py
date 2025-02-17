@@ -42,3 +42,17 @@ class VideoInput(pydantic.BaseModel):
 
   path: str
 
+
+class AudioInput(pydantic.BaseModel):
+  """Represents an audio clip.
+
+  Attributes:
+    path: Path to the audio file.
+    start_time: Start time of the audio clip in seconds.
+    duration: Duration of the audio clip in seconds.
+  """
+
+  path: str
+  start_time: float = 0.0
+  duration: float | None = None
+
