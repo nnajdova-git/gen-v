@@ -17,16 +17,23 @@ This module provides API endpoints for managing various assets.
 """
 
 import logging
+import sys
 
 from components import asset_utils
+from components import firestore_crud
+import constants
 import fastapi
+from mocks import asset_mocks
 from models import api_models
 from models import asset_models
+from models import data_models
 import settings
 
 
 router = fastapi.APIRouter()
+logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 env_settings = settings.EnvSettings()
 
 
@@ -103,3 +110,61 @@ async def get_image_by_id(image_id: str) -> api_models.ImageMetadataResponse:
       date_created=image_metadata.date_created,
       signed_url=image_metadata.signed_url,
   )
+
+
+@router.get('/images/type/{image_type}')
+async def get_images_by_type(
+    image_type: str,
+) -> list[api_models.ImageMetadataResponse]:
+  """Fetches images of a specific source type (e.g., 'Brand').
+
+  Args:
+    image_type: The source type of the images to fetch (e.g., "Brand").
+
+  Returns:
+    A list of ImageMetadataResponse objects, each containing image metadata
+    and a signed URL. Returns an empty list if no images are found.
+  """
+  if env_settings.use_mocks:
+    logger.warning('Returning mock responses.')
+    mocked_image = asset_mocks.mock_get_image_metadata_with_signed_url(
+        'mock_id'
+    )
+    return [
+        api_models.ImageMetadataResponse(
+            source=mocked_image.source,
+            image_name=mocked_image.image_name,
+            context=mocked_image.context,
+            date_created=mocked_image.date_created,
+            signed_url=mocked_image.signed_url,
+        )
+    ]
+
+  image_docs = firestore_crud.query_collection(
+      collection_name=constants.FirestoreCollections.IMAGES,
+      model_type=data_models.Image,
+      query_field='source',
+      query_operator='==',
+      query_value=image_type,
+      database_name=env_settings.firestore_db_name,
+  )
+
+  if not image_docs:
+    logger.info('No images found with source type: %s', image_type)
+    return []
+
+  logger.info('Fetched %d images from Firestore.', len(image_docs))
+  response_list = []
+  for image_doc in image_docs:
+    image_metadata = asset_models.ImageMetadataResult(**image_doc.model_dump())
+    image_metadata.generate_signed_url()
+    response_list.append(
+        api_models.ImageMetadataResponse(
+            source=image_metadata.source,
+            image_name=image_metadata.image_name,
+            context=image_metadata.context,
+            date_created=image_metadata.date_created,
+            signed_url=image_metadata.signed_url,
+        )
+    )
+  return response_list

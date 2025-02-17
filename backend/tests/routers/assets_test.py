@@ -20,8 +20,10 @@ from components import asset_utils
 import fastapi
 from fastapi import testclient
 from models import asset_models
+from models import data_models
 import pytest
 from routers import assets
+import settings
 
 
 @pytest.fixture(name='client')
@@ -42,6 +44,67 @@ def mock_get_image_metadata_fixture(monkeypatch):
   mock = unittest.mock.Mock()
   monkeypatch.setattr(asset_utils, 'get_image_metadata_with_signed_url', mock)
   return mock
+
+
+@pytest.fixture(name='patch_env_settings', autouse=True)
+def patch_env_settings_fixture(monkeypatch):
+  monkeypatch.setattr(asset_utils, 'env_settings', settings.EnvSettings())
+
+
+@pytest.fixture(name='mock_image_data_model')
+def mock_image_data_model_fixture():
+  yield data_models.Image(
+      bucket_name='mock-bucket',
+      file_path='images/mock_image.jpg',
+      file_name='mock_image.jpg',
+      original_file_name='original_mock.jpg',
+      full_gcs_path='gs://mock-bucket/images/mock_image.jpg',
+      source='Brand',
+      image_name='Mock Image',
+      context='Mock Context',
+      date_created=datetime.datetime(2025, 1, 1, 10, 0, 0),
+  )
+
+
+@pytest.fixture(name='mock_image_metadata_result')
+def mock_image_metadata_result_fixture(mock_image_data_model):
+  mock_image = unittest.mock.MagicMock(spec=asset_models.ImageMetadataResult)
+  mock_image.bucket_name = mock_image_data_model.bucket_name
+  mock_image.file_path = mock_image_data_model.file_path
+  mock_image.file_name = mock_image_data_model.file_name
+  mock_image.original_file_name = mock_image_data_model.original_file_name
+  mock_image.full_gcs_path = mock_image_data_model.full_gcs_path
+  mock_image.source = mock_image_data_model.source
+  mock_image.image_name = mock_image_data_model.image_name
+  mock_image.context = mock_image_data_model.context
+  mock_image.date_created = mock_image_data_model.date_created
+  mock_image.signed_url = 'https://example.com/signed-url'
+  yield mock_image
+
+
+@pytest.fixture(name='patch_image_metadata_result')
+def patch_image_metadata_result_fixture(mock_image_metadata_result):
+  with unittest.mock.patch(
+      'routers.assets.asset_models.ImageMetadataResult'
+  ) as mock_image:
+    mock_image.return_value = mock_image_metadata_result
+    yield mock_image
+
+
+@pytest.fixture(name='patch_asset_mocks_module')
+def patch_asset_mocks_module_fixture(mock_image_metadata_result):
+  with unittest.mock.patch('routers.assets.asset_mocks') as mock_module:
+    mock_module.mock_get_image_metadata_with_signed_url.return_value = (
+        mock_image_metadata_result
+    )
+    yield mock_module
+
+
+@pytest.fixture(name='patch_firestore_crud_module')
+def patch_firestore_crud_module_fixture(mock_image_data_model):
+  with unittest.mock.patch('routers.assets.firestore_crud') as mock_firestore:
+    mock_firestore.query_collection.return_value = [mock_image_data_model]
+    yield mock_firestore
 
 
 def test_upload_image_success(client, mock_upload_image_asset):
@@ -83,3 +146,26 @@ def test_get_image_by_id_not_found(client, mock_get_image_metadata):
   with pytest.raises(fastapi.HTTPException) as exc_info:
     client.get('/images/nonexistent_image_id')
   assert exc_info.value.status_code == 404
+
+
+def test_get_images_by_type_with_success(
+    client,
+    patch_asset_mocks_module,
+    patch_firestore_crud_module,
+    patch_image_metadata_result,
+):
+  response = client.get('/images/type/Brand')
+  assert response.status_code == 200
+  patch_asset_mocks_module.mock_get_image_metadata_with_signed_url.assert_not_called()
+  patch_firestore_crud_module.query_collection.assert_called_once()
+  patch_image_metadata_result.called_once()
+
+
+def test_get_images_by_type_with_mocks(
+    client, patch_asset_mocks_module, patch_firestore_crud_module
+):
+  assets.env_settings.use_mocks = True
+  response = client.get('/images/type/Brand')
+  assert response.status_code == 200
+  patch_asset_mocks_module.mock_get_image_metadata_with_signed_url.assert_called_once()
+  patch_firestore_crud_module.query_collection.assert_not_called()
