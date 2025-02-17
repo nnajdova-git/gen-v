@@ -87,6 +87,11 @@ h1, h2, h3, h4, h5, h6 {
   margin-right: var(--page-gutter-size);
   padding: 1rem 2rem;
   text-align: center;
+
+  h1{
+    font-size: var(--mat-sys-display-medium-size);
+    margin: 0.5rem 0 2rem;
+  }
 }
 
 // Material design customisations
