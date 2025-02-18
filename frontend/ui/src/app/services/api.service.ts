@@ -100,11 +100,15 @@ export class ApiService {
   ): Observable<VeoGenerateVideoResponse> {
     this.clearVeoOperationName();
     const apiUrl = `${this.baseUrl}/veo/generate`;
-    return this.http.post<VeoGenerateVideoResponse>(apiUrl, request).pipe(
-      tap((response: VeoGenerateVideoResponse) => {
-        this.veoOperationNameSubject.next(response.operation_name);
-      }),
-    );
+    return this.http
+      .post<VeoGenerateVideoResponse>(apiUrl, request, {
+        withCredentials: true,
+      })
+      .pipe(
+        tap((response: VeoGenerateVideoResponse) => {
+          this.veoOperationNameSubject.next(response.operation_name);
+        }),
+      );
   }
 
   /**
@@ -121,7 +125,9 @@ export class ApiService {
     request: VeoGetOperationStatusRequest,
   ): Observable<VeoGetOperationStatusResponse> {
     const apiUrl = `${this.baseUrl}/veo/operation/status`;
-    return this.http.post<VeoGetOperationStatusResponse>(apiUrl, request);
+    return this.http.post<VeoGetOperationStatusResponse>(apiUrl, request, {
+      withCredentials: true,
+    });
   }
 
   /**
