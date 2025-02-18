@@ -61,8 +61,8 @@ installable dependency list (with hashes for security) is generated in
     file(s) with the correct versions and hashes:
 
     ```bash
-    pip-compile --generate-hashes --output-file=requirements.txt requirements.raw.txt
-    pip-compile --generate-hashes --output-file=requirements_dev.txt requirements_dev.raw.txt
+    pip-compile --generate-hashes --no-annotate --output-file=requirements.txt requirements.raw.txt
+    pip-compile --generate-hashes --no-annotate --allow-unsafe --output-file=requirements_dev.txt requirements_dev.raw.txt
     ```
 
 ## Code Quality and Formatting
