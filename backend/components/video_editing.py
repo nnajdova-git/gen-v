@@ -73,7 +73,6 @@ def add_image_clips_to_video(
     output_path: Path to save the output video.
 
   Raises:
-    FileNotFoundError: If the video or any image file is not found.
     ValueError: If no image inputs are provided.
   """
   #  Check that files have been saved locally
@@ -123,7 +122,7 @@ def concatenate_video_clips(
       output_path: Path to save the output video.
 
   Raises:
-      FileNotFoundError: If any video file is not found.
+      ValueError: If no video inputs are provided.
   """
   if not video_inputs:
     raise ValueError('No video inputs provided.')
@@ -139,5 +138,98 @@ def concatenate_video_clips(
 
   for video_clip in video_clips:
     video_clip.close()
+  final_clip.close()
+
+
+def calculate_audio_duration(
+    i: int, audio_inputs: list[media.AudioInput], video_duration: float
+):
+  """Calculates the duration for each audio clip.
+
+  Args:
+    i: Index of the audio clip.
+    audio_inputs: List of AudioInput objects.
+    video_duration: Duration of the video in seconds.
+
+  Returns:
+    Duration of the audio clip in seconds.
+  """
+  if not audio_inputs[i].duration:
+    next_start_time = (
+        audio_inputs[i + 1].start_time
+        if i < len(audio_inputs) - 1
+        else video_duration
+    )
+    duration = next_start_time - audio_inputs[i].start_time
+  else:
+    duration = audio_inputs[i].duration
+  return duration
+
+
+def load_audio_clips(
+    audio_inputs: list[media.AudioInput], video_duration: float
+) -> list[moviepy.AudioFileClip]:
+  """Loads audio clips from a list of paths.
+
+  Args:
+    audio_inputs: List of paths to the audio files.
+    video_duration: Duration of the video in seconds.
+
+  Returns:
+    List of AudioFileClip objects.
+  """
+  audio_clips = []
+
+  for i, audio_input in enumerate(audio_inputs):
+    check_file_exists(audio_input.path)
+
+    # If no duration calculate it based on the next start or video duration
+    duration = calculate_audio_duration(i, audio_inputs, video_duration)
+
+    audio_clip = (
+        moviepy.AudioFileClip(audio_input.path)
+        .with_start(audio_input.start_time)
+        .with_duration(duration)
+    )
+    audio_clips.append(audio_clip)
+  return audio_clips
+
+
+def add_audio_clips_to_video(
+    video_path: str,
+    audio_inputs: list[media.AudioInput],
+    output_path: str,
+) -> None:
+  """Adds one or more audio clips to a video clip.
+
+  If several videos are provided without start times and duration, they will be
+  played in successive order, and the duration will be equal for each of the
+  audio clips.
+
+  Args:
+    video_path: Path to the video file.
+    audio_inputs: List of AudioInput objects, each representing an audio clip to
+      add.
+    output_path: Path to save the output video.
+
+  Raises:
+    ValueError: If the number of audio start times or durations does not match
+    the number of audio clips.
+  """
+  check_file_exists(video_path)
+  if not audio_inputs:
+    raise ValueError('No audio inputs provided.')
+
+  video = moviepy.VideoFileClip(video_path)
+
+  audio_clips = load_audio_clips(audio_inputs, video.duration)
+
+  final_audio = moviepy.CompositeAudioClip(audio_clips)
+  final_clip = video.with_audio(final_audio).with_duration(video.duration)
+  final_clip.write_videofile(output_path, codec='libx264', audio_codec='aac')
+
+  video.close()
+  for audio in audio_clips:
+    audio.close()
   final_clip.close()
 
