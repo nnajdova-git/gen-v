@@ -15,6 +15,7 @@
  */
 
 import {Routes} from '@angular/router';
+import {EditingPageComponent} from './pages/editing-page/editing-page.component';
 import {GenerateVideoPageComponent} from './pages/generate-video-page/generate-video-page.component';
 import {LandingPageComponent} from './pages/landing-page/landing-page.component';
 
@@ -37,5 +38,11 @@ export const routes: Routes = [
     component: GenerateVideoPageComponent,
     title: 'Gen V | Generate Videos',
     data: {topbarTitle: 'Gen V: Generate Videos'},
+  },
+  {
+    path: 'editing',
+    component: EditingPageComponent,
+    title: 'Gen V | Editing',
+    data: {topbarTitle: 'Gen V: Editing - Turn videos and images into Ads'},
   },
 ];
