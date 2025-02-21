@@ -28,6 +28,7 @@ import {
   VeoGetOperationStatusRequest,
   VeoGetOperationStatusResponse,
 } from '../models/api.models';
+import {ImageAsset} from '../models/asset.models';
 import {ApiService} from './api.service';
 
 describe('ApiService', () => {
@@ -227,4 +228,52 @@ describe('ApiService', () => {
     expect(service.getVeoOperationStatus).toHaveBeenCalled();
     expect(service.getVeoOperationStatus).toHaveBeenCalledTimes(3);
   }));
+
+  it('getBrandImages should return an array of ImageAsset', (done) => {
+    const mockImages: ImageAsset[] = [
+      {
+        id: '123',
+        type: 'image',
+        source: 'Brand',
+        image_name: 'image1.jpg',
+        context: 'Logo',
+        date_created: new Date(),
+        signed_url: 'http://example.com/image1.jpg',
+        selected: false,
+      },
+      {
+        id: '456',
+        type: 'image',
+        source: 'Brand',
+        image_name: 'image2.png',
+        context: 'Icon',
+        date_created: new Date(),
+        signed_url: 'http://example.com/image2.png',
+        selected: true,
+      },
+    ];
+
+    service.getBrandImages().subscribe((images) => {
+      expect(images.length).toBe(2);
+      expect(images).toEqual(
+        jasmine.arrayContaining([
+          jasmine.objectContaining({ image_name: 'image1.jpg' }),
+          jasmine.objectContaining({ image_name: 'image2.png' }),
+        ]),
+      );
+      done();
+    });
+
+    const req = httpMock.expectOne(
+      `${environment.backendUrl}/assets/images/type/Brand`,
+    );
+    expect(req.request.method).toBe('GET');
+
+    req.flush(
+      mockImages.map((img) => {
+        const {id, selected, type, ...rest} = img;
+        return rest;
+      }),
+    );
+  });
 });

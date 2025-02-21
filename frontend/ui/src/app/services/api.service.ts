@@ -25,7 +25,9 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {
   BehaviorSubject,
+  catchError,
   interval,
+  map,
   Observable,
   race,
   switchMap,
@@ -41,6 +43,7 @@ import {
   VeoGetOperationStatusRequest,
   VeoGetOperationStatusResponse,
 } from '../models/api.models';
+import {ImageAsset} from '../models/asset.models';
 
 /**
  * A service that handles API requests to the backend.
@@ -175,6 +178,38 @@ export class ApiService {
           ),
         ),
       ),
+    );
+  }
+
+  /**
+   * Generates a random ID for an asset.
+   *
+   * @return A string representing a random ID.
+   */
+  private generateId(): string {
+    return Math.random().toString(36).substring(2, 15);
+  }
+
+  /**
+   * Get the brand images, e.g. logos, from the backend datastore.
+   * @return A list of images including the metadata associated with them.
+   */
+  getBrandImages(): Observable<ImageAsset[]> {
+    const url = `${this.baseUrl}/assets/images/type/Brand`;
+    return this.http.get<ImageAsset[]>(url, {withCredentials: true}).pipe(
+      map(
+        (images) =>
+          images.map((image) => ({
+            ...image,
+            id: this.generateId(),
+            selected: false,
+            type: 'image',
+          })) as ImageAsset[],
+      ),
+      catchError((error) => {
+        console.error('Error fetching brand images:', error);
+        return throwError(() => error);
+      }),
     );
   }
 }
