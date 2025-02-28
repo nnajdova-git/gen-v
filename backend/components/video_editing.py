@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Functions to perform video editing."""
-
+import contextlib
 import os
 import tempfile
 import uuid
@@ -143,7 +143,7 @@ def concatenate_video_clips(
 
 def calculate_audio_duration(
     i: int, audio_inputs: list[media.AudioInput], video_duration: float
-):
+) -> float:
   """Calculates the duration for each audio clip.
 
   Args:
@@ -232,4 +232,60 @@ def add_audio_clips_to_video(
   for audio in audio_clips:
     audio.close()
   final_clip.close()
+
+
+@contextlib.contextmanager
+def load_text_clips(
+    video_path: str, text_inputs: list[media.TextInput]
+):
+  """Loads text clips from a list of text inputs and a video clip.
+
+  Args:
+    video_path: The path to the video clip to use as a reference for duration.
+    text_inputs: List of TextInput objects.
+
+  Yields:
+    List of TextClip objects and the video clip.
+  """
+  text_clips = []
+
+  with moviepy.VideoFileClip(video_path) as video:
+    for text_input in text_inputs:
+      if text_input.filename:
+        check_file_exists(text_input.filename)
+
+      if not text_input.duration:
+        text_input.duration = video.duration
+
+      text_clip = moviepy.TextClip(
+          **text_input.model_dump(exclude={'start_time'})
+      ).with_start(text_input.start_time)
+
+      text_clips.append(text_clip)
+
+    try:
+      yield [video] + text_clips
+    finally:
+      for text_clip in text_clips:
+        text_clip.close()
+
+
+def add_text_clips_to_video(
+    video_path: str, text_inputs: list[media.TextInput], output_path: str
+) -> None:
+  """Adds text to a video clip.
+
+  Args:
+    video_path: Path to the video file.
+    text_inputs: List of TextInput objects, each representing the text to add.
+    output_path: Path to save the output video.
+
+  Raises:
+    FileNotFoundError: If the video file is not found.
+  """
+  check_file_exists(video_path)
+
+  with load_text_clips(video_path, text_inputs) as clips:
+    with moviepy.CompositeVideoClip(clips) as final_clip:
+      final_clip.write_videofile(output_path, codec='libx264')
 

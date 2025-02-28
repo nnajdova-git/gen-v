@@ -60,6 +60,18 @@ def fixture_sample_audio(tmpdir):
   return audio_paths
 
 
+@pytest.fixture(name='sample_text_files')
+def fixture_sample_text_files(tmpdir):
+  """Creates sample text files."""
+  text_paths = []
+  for i in range(2):
+    text_path = os.path.join(tmpdir, f'text_file{i}.txt')
+    with open(text_path, 'w') as f:
+      f.write(f'This is text file {i}.')
+    text_paths.append(text_path)
+  return text_paths
+
+
 def create_mp3(output_path, frequency=440, duration_ms=4000, sample_rate=44100):
   """Creates an MP3 file with a sine wave tone.
 
@@ -69,8 +81,9 @@ def create_mp3(output_path, frequency=440, duration_ms=4000, sample_rate=44100):
       duration_ms: Duration of the tone in milliseconds.
       sample_rate: Sample rate of the audio.
   """
-  t = np.linspace(0, duration_ms / 1000,
-                  int(sample_rate * duration_ms / 1000), False)
+  t = np.linspace(
+      0, duration_ms / 1000, int(sample_rate * duration_ms / 1000), False
+  )
   tone = np.sin(2 * np.pi * frequency * t)
   audio_data = (tone * (2**15 - 1)).astype(np.int16).tobytes()
   audio_segment = pydub.AudioSegment(
@@ -228,8 +241,10 @@ def test_calculate_audio_duration_existing_duration(sample_audio_paths):
 
 def test_calculate_audio_duration_no_duration(sample_audio_paths):
   """Tests calculating the duration of audio inputs when no duration is provided."""
-  audio_inputs = [media.AudioInput(path=sample_audio_paths[0], start_time=0),
-                  media.AudioInput(path=sample_audio_paths[1], start_time=3)]
+  audio_inputs = [
+      media.AudioInput(path=sample_audio_paths[0], start_time=0),
+      media.AudioInput(path=sample_audio_paths[1], start_time=3),
+  ]
   duration1 = video_editing.calculate_audio_duration(0, audio_inputs, 7)
   duration2 = video_editing.calculate_audio_duration(1, audio_inputs, 7)
   assert duration1 == 3
@@ -270,4 +285,100 @@ def test_add_audio_clips_no_audio_inputs(sample_videos_paths, tmpdir):
   with pytest.raises(ValueError, match='No audio inputs provided.'):
     video_editing.add_audio_clips_to_video(
         sample_videos_paths[0], audio_inputs, output_path
+    )
+
+
+def test_add_text_clips_to_video(
+    sample_videos_paths, tmpdir, sample_text_files
+):
+  """Tests adding text clips to a video, both from strings and files."""
+  output_path = os.path.join(tmpdir, 'output_text.mp4')
+  text_inputs = [
+      media.TextInput(
+          text='Hello, World!',
+          font='DejaVuSans',
+          font_size=30,
+          start_time=0,
+          duration=2,
+          color='white',
+          position=('center', 'center'),
+      ),
+      media.TextInput(
+          filename=sample_text_files[0],
+          font_size=12,
+          start_time=2,
+          duration=3,
+          color='blue',
+          position=(100, 50),
+      ),
+  ]
+  video_editing.add_text_clips_to_video(
+      sample_videos_paths[0], text_inputs, output_path
+  )
+  assert os.path.exists(output_path)
+
+
+def test_add_text_clips_default_duration(sample_videos_paths, tmpdir):
+  """Tests text clip with default duration (equal to video duration)."""
+  output_path = os.path.join(tmpdir, 'output_text_default.mp4')
+  text_inputs = [
+      media.TextInput(
+          text='Default Duration Text',
+          start_time=1,
+          font_size=40,
+          color='yellow',
+          position='top',
+      )
+  ]
+  video_editing.add_text_clips_to_video(
+      sample_videos_paths[0], text_inputs, output_path
+  )
+  assert os.path.exists(output_path)
+
+
+def test_add_text_clips_from_file(
+    sample_videos_paths, tmpdir, sample_text_files
+):
+  """Tests adding text clips to a video using only text from files."""
+  output_path = os.path.join(tmpdir, 'output_from_files.mp4')
+  text_inputs = [
+      media.TextInput(
+          filename=sample_text_files[0],
+          start_time=0,
+          duration=2.5,
+          position=('center', 'center'),
+          font_size=24,
+          color='red',
+      ),
+      media.TextInput(
+          filename=sample_text_files[1],
+          start_time=2.5,
+          duration=2.5,
+          position=(10, 10),
+          font_size=36,
+          color='green',
+      ),
+  ]
+  video_editing.add_text_clips_to_video(
+      sample_videos_paths[0], text_inputs, output_path
+  )
+  assert os.path.exists(output_path)
+
+
+def test_add_text_clips_empty_list(sample_videos_paths, tmpdir):
+  """Tests the function's behavior with an empty list of text_inputs."""
+  output_path = os.path.join(tmpdir, 'output_empty_text_inputs.mp4')
+  video_editing.add_text_clips_to_video(sample_videos_paths[0], [], output_path)
+  assert os.path.exists(output_path)
+
+
+def test_add_text_clip_nonexistent_file(sample_videos_paths, tmpdir):
+  """Tests behavior when a text input path points to a nonexistent file."""
+  output_path = os.path.join(tmpdir, 'output_nonexistent.mp4')
+  text_inputs = [
+      media.TextInput(filename='nonexistent_file.txt', start_time=0, duration=2)
+  ]
+  with pytest.raises(FileNotFoundError):  # Expect a FileNotFoundError
+    video_editing.add_text_clips_to_video(
+        sample_videos_paths[0], text_inputs, output_path
     )

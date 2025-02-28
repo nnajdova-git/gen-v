@@ -158,7 +158,7 @@ def test_get_images_by_type_with_success(
   assert response.status_code == 200
   patch_asset_mocks_module.mock_get_image_metadata_with_signed_url.assert_not_called()
   patch_firestore_crud_module.query_collection.assert_called_once()
-  patch_image_metadata_result.called_once()
+  patch_image_metadata_result.assert_called_once()
 
 
 def test_get_images_by_type_with_mocks(
