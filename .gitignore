@@ -137,3 +137,11 @@ media/
 # IDE
 .idea
 .vscode
+
+# Node.js
+node_modules/
+/node_modules/.cache/
+
+# Angular
+.angular/
+e2e/
