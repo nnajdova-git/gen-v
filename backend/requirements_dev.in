@@ -1,0 +1,4 @@
+pip-tools==7.4.1
+pyink==24.10.1
+pylint==3.3.6
+pytest==8.3.5
