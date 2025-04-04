@@ -17,7 +17,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gtech-gen-v"
-version = "1.0.0"
+version = "0.0.1"
 description = """
 AI-powered video ads with Veo on Google Cloud, enhanced with AI voice and audio,
 and personalised with brand logos, stickers and promo texts.

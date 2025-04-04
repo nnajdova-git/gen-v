@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Exposes core data models for the gen_v package."""
-from .media import AudioInput
-from .media import ImageInput
-from .media import TextInput
-from .media import VideoInput
-from .media import VideoTransition
+from gen_v.models.media import AudioInput
+from gen_v.models.media import ImageInput
+from gen_v.models.media import TextInput
+from gen_v.models.media import VideoInput
+from gen_v.models.media import VideoTransition
 
 
 __all__ = [
