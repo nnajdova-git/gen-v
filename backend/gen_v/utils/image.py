@@ -21,11 +21,11 @@ def rescale_image_height(image_path: str, desired_height: int) -> Image:
   """Rescales an image to a desired height, maintaining the aspect ratio.
 
   Args:
-      image_path: The path to the image file.
-      desired_height: The desired height of the resized image.
+    image_path: The path to the image file.
+    desired_height: The desired height of the resized image.
 
   Returns:
-      A PIL Image object representing the resized image in RGBA format.
+    A PIL Image object representing the resized image in RGBA format.
   """
   image = Image.open(image_path)
   scale_factor = desired_height / image.height
@@ -40,11 +40,11 @@ def rescale_image_width(image_path: str, desired_width: int) -> Image:
   """Rescales an image to a desired width, maintaining the aspect ratio.
 
   Args:
-      image_path: The path to the image file.
-      desired_width: The desired width of the resized image.
+    image_path: The path to the image file.
+    desired_width: The desired width of the resized image.
 
   Returns:
-      A PIL Image object representing the resized image in RGBA format.
+    A PIL Image object representing the resized image in RGBA format.
   """
   image = Image.open(image_path)
   aspect_ratio = desired_width / image.width
@@ -53,3 +53,33 @@ def rescale_image_width(image_path: str, desired_width: int) -> Image:
       (desired_width, desired_height), Image.Resampling.LANCZOS
   )
   return image.convert('RGBA')
+
+
+def rescale_image_to_fit(
+    image_path: str, desired_width: int, desired_height: int
+):
+  """Rescales an image to fit within desired dimensions, keeps aspect ratio.
+
+  Chooses between rescaling by height or width to ensure the image fits
+  within the given dimensions without distortion.
+
+  Args:
+    image_path: Path to the image file.
+    desired_width: The desired width of the resized image.
+    desired_height: The desired height of the resized image.
+
+  Returns:
+    A PIL Image object representing the resized image.
+  """
+  image = Image.open(image_path)
+  original_width, original_height = image.size
+
+  image_aspect_ratio = original_width / original_height
+  desired_aspect_ratio = desired_width / desired_height
+
+  if image_aspect_ratio > desired_aspect_ratio:
+    # Image is wider than desired, rescale by width
+    return rescale_image_width(image_path, desired_width)
+  else:
+    # Image is taller than desired, rescale by height
+    return rescale_image_height(image_path, desired_height)
