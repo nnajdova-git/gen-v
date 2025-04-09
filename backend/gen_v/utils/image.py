@@ -34,3 +34,22 @@ def rescale_image_height(image_path: str, desired_height: int) -> Image:
       (desired_width, desired_height), Image.Resampling.LANCZOS
   )
   return image.convert('RGBA')
+
+
+def rescale_image_width(image_path: str, desired_width: int) -> Image:
+  """Rescales an image to a desired width, maintaining the aspect ratio.
+
+  Args:
+      image_path: The path to the image file.
+      desired_width: The desired width of the resized image.
+
+  Returns:
+      A PIL Image object representing the resized image in RGBA format.
+  """
+  image = Image.open(image_path)
+  aspect_ratio = desired_width / image.width
+  desired_height = int(image.height * aspect_ratio)
+  image = image.resize(
+      (desired_width, desired_height), Image.Resampling.LANCZOS
+  )
+  return image.convert('RGBA')

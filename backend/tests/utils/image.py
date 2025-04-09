@@ -36,3 +36,11 @@ def test_rescale_image_height(sample_images_paths):
   assert rescaled_image.height == 200
   assert rescaled_image.width == 400
   assert rescaled_image.mode == 'RGBA'
+
+
+def test_rescale_image_width(sample_images_paths):
+  """Tests correct width and aspect ratio after rescaling by width."""
+  rescaled_image = image.rescale_image_width(sample_images_paths[0], 500)
+  assert rescaled_image.height == 250
+  assert rescaled_image.width == 500
+  assert rescaled_image.mode == 'RGBA'
