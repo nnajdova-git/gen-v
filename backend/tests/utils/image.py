@@ -85,3 +85,41 @@ def test_rescale_image_to_fit_tall_image_into_square(sample_image_files):
   )
   assert rescaled_img.width == 50
   assert rescaled_img.height == 100
+
+
+@pytest.mark.parametrize(
+    'hex_input, expected_rgb_tuple',
+    [
+        ('#FF0000', (255, 0, 0)),
+        ('00FF00', (0, 255, 0)),
+        ('0000FF', (0, 0, 255)),
+        ('#ffffff', (255, 255, 255)),
+        ('000000', (0, 0, 0)),
+        ('#fF0aA9', (255, 10, 169)),
+        ('123456', (18, 52, 86)),
+    ],
+)
+def test_hex_to_rgb_valid_inputs(hex_input, expected_rgb_tuple):
+  """Tests successful conversion for various valid hex strings."""
+  assert image.hex_to_rgb(hex_input) == expected_rgb_tuple
+
+
+@pytest.mark.parametrize(
+    'invalid_hex_input',
+    [
+        '#FF000',
+        'FF000',
+        '#FF00001',
+        'FF00001',
+        'FFG000',
+        '#FFG000',
+        '',
+        '#',
+        ' #FF0000FF 00 00',
+        '#F00',
+    ],
+)
+def test_hex_to_rgb_invalid_inputs_raise_value_error(invalid_hex_input):
+  """Tests that invalid hex strings raise a ValueError."""
+  with pytest.raises(ValueError):
+    image.hex_to_rgb(invalid_hex_input)

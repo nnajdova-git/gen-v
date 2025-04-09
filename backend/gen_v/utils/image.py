@@ -83,3 +83,33 @@ def rescale_image_to_fit(
   else:
     # Image is taller than desired, rescale by height
     return rescale_image_height(image_path, desired_height)
+
+
+def hex_to_rgb(hex_color_string: str) -> tuple[int, int, int] | None:
+  """Converts a hexadecimal color string to an RGB tuple.
+
+  Handles 6-digit hex strings, optionally prefixed with '#'. Input is
+  case-insensitive.
+
+  Args:
+    hex_color_string: The hex code to convert (e.g., "#FF0000", "ff0000")
+
+  Returns:
+    A tuple containing the integer values for Red, Green, and Blue
+    (e.g., (255, 0, 0)).
+
+  Raises:
+    ValueError: If the input string is not a valid 6-digit hex color (after
+      removing '#').
+  """
+  hex_code = hex_color_string.lstrip('#')
+  if len(hex_code) != 6:
+    raise ValueError(
+        f'Invalid hex color string "{hex_color_string}". '
+        'Must be 3 or 6 hex digits (optional leading "#").'
+    )
+  else:
+    red = int(hex_code[0:2], 16)
+    green = int(hex_code[2:4], 16)
+    blue = int(hex_code[4:6], 16)
+    return red, green, blue
