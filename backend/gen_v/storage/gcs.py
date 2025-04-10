@@ -24,6 +24,7 @@ def get_blob(uri: str, storage_client: storage.Client = None) -> any:
 
   Args:
     uri: The full Google Cloud Storage URI of the blob to retrieve.
+    storage_client: The Google Cloud Storage client.
 
   Returns:
     A Google Cloud Storage blob object.
@@ -47,6 +48,8 @@ def download_file_locally(
     file_name: (Optional) The name to give the downloaded file. If not
       provided, the file name will be extracted from the URI.
     tmp_string: (Optional) The directory the download should be placed in.
+    storage_client: The Google Cloud Storage client.
+
 
   Returns:
     The path to the local file where the file was saved.
@@ -76,6 +79,7 @@ def download_files(
 
   Args:
     gcs_uris: A list of Google Cloud Storage URIs of the files to download.
+    storage_client: The Google Cloud Storage client.
 
   Returns:
     A list of local file paths where the files were saved.
@@ -93,6 +97,7 @@ def retrieve_all_files_from_gcs_folder(
   """Retrieve all files from a GCS folder.
   Args:
       gcs_uri: The GCS folder to retrieve files from.
+      storage_client: The Google Cloud Storage client.
   Returns:
       A list of GCS URIs for all files in the folder.
   """
@@ -118,6 +123,7 @@ def upload_file_to_gcs(
   Args:
       local_file_path: The local system path to the file to upload.
       gcs_uri: The GCS URI where the file should be uploaded.
+      storage_client: The Google Cloud Storage client.
   """
   storage_client = storage_client or storage.Client()
   try:
