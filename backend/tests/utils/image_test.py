@@ -147,3 +147,31 @@ def test_place_rescaled_image_on_background(sample_image_files, tmpdir):
   saved_image = Image.open(output_path_str)
   assert saved_image.width == bg_width
   assert saved_image.height == bg_height
+
+
+def test_replace_solid_background(sample_image_files, tmpdir):
+  """Tests replacing the solid background of a generated image."""
+  # The wide image is green
+  input_path = sample_image_files['wide']
+  output_path = tmpdir.join('replaced_background.png')
+
+  target_color = models.RGBColor(r=0, g=255, b=0)
+  replacement_color = models.RGBColor(r=255, g=0, b=0)
+  threshold = 10
+
+  image.replace_background_color(
+      image_path=input_path,
+      target_color=target_color,
+      replacement_color=replacement_color,
+      recolored_image_local_path=output_path,
+      threshold=threshold,
+  )
+
+  assert os.path.exists(output_path)
+  with Image.open(output_path) as result_img:
+    assert result_img.size == (200, 100)
+    assert result_img.mode == 'RGBA'
+    colors = result_img.getcolors()
+    assert len(colors) == 1
+    _, actual_color = colors[0]
+    assert actual_color == (255, 0, 0, 255)

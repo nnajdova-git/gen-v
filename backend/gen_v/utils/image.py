@@ -154,3 +154,46 @@ def place_rescaled_image_on_background(
 
   background_image.save(output_path)
   return background_image
+
+
+def replace_background_color(
+    image_path: str,
+    target_color: models.RGBColor,
+    replacement_color: models.RGBColor,
+    recolored_image_local_path: str,
+    threshold: int = 25,
+):
+  """Replaces the target color in an image with the replacement color.
+
+  Args:
+    image_path: Path to the input image.
+    target_color: The color to be replaced.
+    replacement_color: The new color to use.
+    recolored_image_local_path: Path to save the recolored image.
+    threshold: The color distance threshold for edge detection.
+
+  Raises:
+    ValueError: If a problem occurs when saving the output.
+  """
+  with Image.open(image_path) as image:
+    image = image.convert('RGBA')
+    image_data = image.load()
+    width, height = image.size
+    replacement_rgba = (
+        replacement_color.r,
+        replacement_color.g,
+        replacement_color.b,
+        255,
+    )
+    for x in range(width):
+      for y in range(height):
+        current_pixel_rgba = image_data[x, y]
+        current_color = models.RGBColor.from_tuple(current_pixel_rgba[:3])
+        if current_color.distance_to(target_color) < threshold:
+          image_data[x, y] = replacement_rgba
+    try:
+      image.save(recolored_image_local_path)
+    except (ValueError, OSError) as save_err:
+      raise ValueError(
+          f'Failed to save image to {recolored_image_local_path}: {save_err}'
+      ) from save_err
