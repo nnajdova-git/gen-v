@@ -123,3 +123,26 @@ def test_hex_to_rgb_invalid_inputs_raise_value_error(invalid_hex_input):
   """Tests that invalid hex strings raise a ValueError."""
   with pytest.raises(ValueError):
     image.hex_to_rgb(invalid_hex_input)
+
+
+def test_place_rescaled_image_on_background(sample_image_files, tmpdir):
+  """Tests placing a rescaled image onto a background."""
+  output_path_str = tmpdir.join('test_output_composite.png')
+  bg_color_rgb = (128, 0, 128)
+  bg_width = 300
+  bg_height = 250
+
+  result_image_obj = image.place_rescaled_image_on_background(
+      foreground_image_path=sample_image_files['wide'],
+      background_width=bg_width,
+      background_height=bg_height,
+      background_color=bg_color_rgb,
+      output_path=output_path_str,
+  )
+
+  assert isinstance(result_image_obj, Image.Image)
+  assert os.path.exists(output_path_str)
+
+  saved_image = Image.open(output_path_str)
+  assert saved_image.width == bg_width
+  assert saved_image.height == bg_height

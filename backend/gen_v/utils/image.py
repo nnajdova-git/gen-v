@@ -113,3 +113,43 @@ def hex_to_rgb(hex_color_string: str) -> tuple[int, int, int] | None:
     green = int(hex_code[2:4], 16)
     blue = int(hex_code[4:6], 16)
     return red, green, blue
+
+
+def place_rescaled_image_on_background(
+    foreground_image_path: str,
+    background_width: int,
+    background_height: int,
+    background_color: tuple[int, int, int] | str,
+    output_path: str,
+) -> Image:
+  """Place fit-rescaled foreground image onto specified background.
+
+  Rescales an image to fit within desired dimensions, keeps aspect ratio,
+  and places it on top of a background image of the specified colour.
+
+  Args:
+    foreground_image_path: Path to the foreground image file.
+    background_width: The desired width of the background image.
+    background_height: The desired height of the background image.
+    background_color: The color of the background image (RGB tuple).
+    output_path: Local path to save the resulting image.
+
+  Returns:
+    A PIL Image object representing the resulting image.
+  """
+  rescaled_image = rescale_image_to_fit(
+      foreground_image_path, background_width, background_height
+  )
+
+  background_image = Image.new(
+      'RGB', (background_width, background_height), background_color
+  )
+
+  # Calculate offset to centre the image.
+  x_offset = (background_width - rescaled_image.width) // 2
+  y_offset = (background_height - rescaled_image.height) // 2
+
+  background_image.paste(rescaled_image, (x_offset, y_offset), rescaled_image)
+
+  background_image.save(output_path)
+  return background_image
