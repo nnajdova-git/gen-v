@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Pydantic classes for video editing."""
-
+import math
 import pydantic
 from typing import Self
 from typing import Tuple
@@ -194,3 +194,17 @@ class RGBColor(pydantic.BaseModel):
       A tuple containing the (r, g, b) values.
     """
     return self.r, self.g, self.b
+
+  def distance_to(self, other_color: Self) -> float:
+    """Calculates the Euclidean distance from this color to another RGB color.
+
+    Args:
+      other_color: The other RGBColor instance to compare against.
+
+    Returns:
+      The Euclidean distance between this color and other_color as a float.
+    """
+    delta_r_sq = (self.r - other_color.r) ** 2
+    delta_g_sq = (self.g - other_color.g) ** 2
+    delta_b_sq = (self.b - other_color.b) ** 2
+    return math.sqrt(delta_r_sq + delta_g_sq + delta_b_sq)

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for media models."""
+import math
 import pytest
 from gen_v import models
 
@@ -71,3 +72,26 @@ def test_to_tuple_conversion(r, g, b, expected_tuple):
   """Test converting an RGBColor instance back to a tuple."""
   color = models.RGBColor(r=r, g=g, b=b)
   assert color.to_tuple() == expected_tuple
+
+
+def test_color_distance():
+  """Tests the distance_to method for calculating Euclidean distance."""
+  color1 = models.RGBColor(r=0, g=0, b=0)
+  color2 = models.RGBColor(r=255, g=255, b=255)
+  color3 = models.RGBColor(r=30, g=40, b=0)
+  color4 = models.RGBColor(r=0, g=0, b=0)
+  color5 = models.RGBColor(r=3, g=4, b=0)
+
+  assert color1.distance_to(color1) == pytest.approx(0.0)
+  assert color1.distance_to(color4) == pytest.approx(0.0)
+
+  assert color1.distance_to(color5) == pytest.approx(5.0)
+
+  expected_max_dist = math.sqrt(255**2 + 255**2 + 255**2)
+  assert color1.distance_to(color2) == pytest.approx(expected_max_dist)
+
+  dist_1_to_3 = color1.distance_to(color3)
+  dist_3_to_1 = color3.distance_to(color1)
+  assert dist_1_to_3 == pytest.approx(dist_3_to_1)
+
+  assert color1.distance_to(color3) == pytest.approx(50.0)
