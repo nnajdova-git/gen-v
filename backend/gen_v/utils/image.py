@@ -15,6 +15,7 @@
 
 Helper functions for working with images using the Pillow library."""
 from PIL import Image
+from gen_v import models
 
 
 def rescale_image_height(image_path: str, desired_height: int) -> Image:
@@ -119,7 +120,7 @@ def place_rescaled_image_on_background(
     foreground_image_path: str,
     background_width: int,
     background_height: int,
-    background_color: tuple[int, int, int] | str,
+    background_color: models.RGBColor,
     output_path: str,
 ) -> Image:
   """Place fit-rescaled foreground image onto specified background.
@@ -131,7 +132,7 @@ def place_rescaled_image_on_background(
     foreground_image_path: Path to the foreground image file.
     background_width: The desired width of the background image.
     background_height: The desired height of the background image.
-    background_color: The color of the background image (RGB tuple).
+    background_color: The RGB color of the background image.
     output_path: Local path to save the resulting image.
 
   Returns:
@@ -142,7 +143,7 @@ def place_rescaled_image_on_background(
   )
 
   background_image = Image.new(
-      'RGB', (background_width, background_height), background_color
+      'RGB', (background_width, background_height), background_color.to_tuple()
   )
 
   # Calculate offset to centre the image.

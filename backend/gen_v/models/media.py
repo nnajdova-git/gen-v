@@ -16,6 +16,7 @@
 
 import pydantic
 from typing import Self
+from typing import Tuple
 
 
 class VideoInput(pydantic.BaseModel):
@@ -185,3 +186,11 @@ class RGBColor(pydantic.BaseModel):
       return cls(r=rgb_tuple[0], g=rgb_tuple[1], b=rgb_tuple[2])
     except pydantic.ValidationError as e:
       raise e
+
+  def to_tuple(self) -> Tuple[int, int, int]:
+    """Converts the RGBColor instance to a tuple of integers.
+
+    Returns:
+      A tuple containing the (r, g, b) values.
+    """
+    return self.r, self.g, self.b

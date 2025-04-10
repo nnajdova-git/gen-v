@@ -40,11 +40,11 @@ def test_valid_creation_direct(r, g, b, expected_r, expected_g, expected_b):
 
 
 @pytest.mark.parametrize(
-    'r, g, b, expected_r, expected_g, expected_b',
+    'rgb_tuple, expected_r, expected_g, expected_b',
     [
-        (10, 128, 200, 10, 128, 200),
-        (0, 0, 0, 0, 0, 0),
-        (255, 255, 255, 255, 255, 255),
+        ((10, 128, 200), 10, 128, 200),
+        ((0, 0, 0), 0, 0, 0),
+        ((255, 255, 255), 255, 255, 255),
     ],
     ids=['standard', 'min_values', 'max_values'],
 )
@@ -56,3 +56,18 @@ def test_valid_creation_from_tuple(
   assert color.r == expected_r
   assert color.g == expected_g
   assert color.b == expected_b
+
+
+@pytest.mark.parametrize(
+    'r, g, b, expected_tuple',
+    [
+        (10, 128, 200, (10, 128, 200)),
+        (0, 0, 0, (0, 0, 0)),
+        (255, 255, 255, (255, 255, 255)),
+    ],
+    ids=['standard', 'min_values', 'max_values'],
+)
+def test_to_tuple_conversion(r, g, b, expected_tuple):
+  """Test converting an RGBColor instance back to a tuple."""
+  color = models.RGBColor(r=r, g=g, b=b)
+  assert color.to_tuple() == expected_tuple

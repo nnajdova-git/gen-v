@@ -15,6 +15,7 @@
 import os
 from PIL import Image
 import pytest
+from gen_v import models
 from gen_v.utils import image
 
 
@@ -128,7 +129,7 @@ def test_hex_to_rgb_invalid_inputs_raise_value_error(invalid_hex_input):
 def test_place_rescaled_image_on_background(sample_image_files, tmpdir):
   """Tests placing a rescaled image onto a background."""
   output_path_str = tmpdir.join('test_output_composite.png')
-  bg_color_rgb = (128, 0, 128)
+  bg_color_rgb = models.RGBColor(r=128, g=0, b=128)
   bg_width = 300
   bg_height = 250
 
