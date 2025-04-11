@@ -18,13 +18,17 @@ from gen_v.models.media import RGBColor
 from gen_v.models.media import TextInput
 from gen_v.models.media import VideoInput
 from gen_v.models.media import VideoTransition
+from gen_v.models.video import GeminiPromptRequest
+from gen_v.models.video import VeoApiRequest
 
 
 __all__ = [
     'AudioInput',
+    'GeminiPromptRequest',
     'ImageInput',
     'RGBColor',
     'TextInput',
+    'VeoApiRequest',
     'VideoInput',
     'VideoTransition',
 ]

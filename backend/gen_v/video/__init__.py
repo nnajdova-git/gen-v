@@ -11,3 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Exposes core functions for the video package."""
+from gen_v.video.generation import get_gemini_generated_video_prompt
+from gen_v.video.generation import send_request_to_google_api
+
+__all__ = [
+    'get_gemini_generated_video_prompt',
+    'send_request_to_google_api',
+]
