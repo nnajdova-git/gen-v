@@ -54,7 +54,7 @@ class GeminiPromptRequest(pydantic.BaseModel):
     if self.image_file_path:
       try:
         logger.info(
-            f'Attempting to load image data from: {self.image_file_path}'
+            'Attempting to load image data from: %s', self.image_file_path
         )
         if not os.path.exists(self.image_file_path):
           raise ValueError(f'Image file not found: {self.image_file_path}')
@@ -63,11 +63,12 @@ class GeminiPromptRequest(pydantic.BaseModel):
         if mime_type_guess is None:
           self.mime_type = 'application/octet-stream'
           logger.warning(
-              f'Could not determine MIME type for {self.image_file_path}.'
-              f' Defaulting to {self.mime_type}.'
+              'Could not determine MIME type for %s. Defaulting to %s',
+              self.image_file_path,
+              self.mime_type,
           )
         else:
-          logger.info(f'Determined MIME type: {self.mime_type}')
+          logger.info('Determined MIME type: %s', self.mime_type)
           self.mime_type = mime_type_guess
 
         with open(self.image_file_path, 'rb') as f:
@@ -75,16 +76,17 @@ class GeminiPromptRequest(pydantic.BaseModel):
         logger.info('image_bytes attribute populated.')
 
       except FileNotFoundError as e:
-        logger.error(f'File not found error during model validation: {e}')
+        logger.error(
+            'File not found error during model validation: %s', exc_info=True
+        )
         raise ValueError(f'Image file not found: {self.image_file_path}') from e
       except Exception as e:
         logger.error(
-            f'Error processing image during model validation: {e}',
+            'Error processing image during model validation: %s',
             exc_info=True,
         )
         raise ValueError(f'Failed to process image file: {e}') from e
     else:
-      # Ensure attributes are None if no path is provided
       self.image_bytes = None
       self.mime_type = None
 
