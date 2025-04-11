@@ -68,8 +68,8 @@ def send_request_to_google_api(
     access_token = get_access_token()
 
   headers = {
-      'Authorization': f'Bearer {access_token}',
-      'Content-Type': 'application/json',
+      "Authorization": f"Bearer {access_token}",
+      "Content-Type": "application/json",
   }
 
   response = requests.post(
@@ -104,7 +104,7 @@ def get_gemini_generated_video_prompt(
   if client is None:
     if not project_id or not location:
       raise ValueError(
-          'project_id and location must be provided if client is None'
+          "project_id and location must be provided if client is None"
       )
     client = genai.Client(vertexai=True, project=project_id, location=location)
 
@@ -116,7 +116,7 @@ def get_gemini_generated_video_prompt(
         )
     )
   else:
-    logger.warning('No image found, sending only the prompt.')
+    logger.warning("No image found, sending only the prompt.")
 
   response = client.models.generate_content(
       model=request_data.model_name,
@@ -125,5 +125,36 @@ def get_gemini_generated_video_prompt(
           media_resolution=types.MediaResolution.MEDIA_RESOLUTION_LOW,
       ),
   )
-  logger.info('The response is: %s', response.text)
+  logger.info("The response is: %s", response.text)
   return response.text
+
+
+def compose_videogen_request(request_data: models.VeoApiRequest) -> dict:
+  """Composes a request payload for the Video Generation API from input data.
+
+  Args:
+      request_data: A VeoApiRequest object containing all necessary parameters.
+
+  Returns:
+      A dictionary representing the JSON request payload.
+  """
+  instance = {"prompt": request_data.prompt}
+  # Access image_uri from the model
+  if request_data.image_uri:
+    # Note: Still hardcoding png here, could be enhanced later if needed
+    instance["image"] = {"gcsUri": request_data.image_uri, "mimeType": "png"}
+
+  # Build request dictionary using attributes from the model instance
+  request_payload = {
+      "instances": [instance],
+      "parameters": {
+          "storageUri": request_data.gcs_uri,
+          "durationSeconds": request_data.duration,
+          "sampleCount": request_data.sample_count,
+          "aspectRatio": request_data.aspect_ratio,
+          "negativePrompt": request_data.negative_prompt,
+          "prompt_enhance": request_data.prompt_enhance,
+          "personGeneration": request_data.person_generation,
+      },
+  }
+  return request_payload

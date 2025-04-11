@@ -91,3 +91,56 @@ class GeminiPromptRequest(pydantic.BaseModel):
       self.mime_type = None
 
     return self
+
+
+class VeoApiRequest(pydantic.BaseModel):
+  """Input data for composing a Veo Video Generation API request.
+
+  Attributes:
+    prompt: The text prompt for video generation.
+    image_uri: The GCS URI of an image to use as a starting point.
+    gcs_uri: The GCS URI where the generated video will be stored.
+    duration: The desired duration of the video in seconds.
+    sample_count: The number of video samples to generate.
+    aspect_ratio: The aspect ratio of the video (e.g., "16:9").
+    negative_prompt: Text describing what shouldn't be included in the video.
+    prompt_enhance: Whether to enhance the prompt (default: True).
+    person_generation: Settings for person generation in the video.
+  """
+
+  prompt: str
+  image_uri: str | None = None
+  gcs_uri: str
+  duration: int = 5
+  sample_count: int = 1
+  aspect_ratio: str = '16:9'
+  negative_prompt: str = ''
+  prompt_enhance: bool = True
+  person_generation: str = 'allow_adult'
+
+  def to_api_payload(self, image_mime_type='png') -> dict:
+    """Builds the dictionary payload required by the Veo API.
+    Args:
+      image_mime_type: The mimetype of the image.
+    """
+    instance = {'prompt': self.prompt}
+    if self.image_uri:
+      instance['image'] = {
+          'gcsUri': self.image_uri,
+          'mimeType': image_mime_type,
+      }
+
+    payload = {
+        'instances': [instance],
+        'parameters': {
+            'storageUri': self.gcs_uri,
+            'durationSeconds': self.duration,
+            'sampleCount': self.sample_count,
+            'aspectRatio': self.aspect_ratio,
+            'negativePrompt': self.negative_prompt,
+            'prompt_enhance': self.prompt_enhance,
+            'personGeneration': self.person_generation,
+        },
+    }
+    logger.info('Generated Veo API request payload.')
+    return payload
