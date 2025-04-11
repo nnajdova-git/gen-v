@@ -164,6 +164,10 @@ class RGBColor(pydantic.BaseModel):
   g: int = pydantic.Field(ge=0, le=255)
   b: int = pydantic.Field(ge=0, le=255)
 
+  def __str__(self) -> str:
+    """Returns a string representation suitable for filenames."""
+    return f'{self.r}_{self.g}_{self.b}'
+
   @classmethod
   def from_tuple(cls, rgb_tuple: tuple[int, int, int]) -> Self:
     """Creates an RGBColor instance from a tuple of integers.

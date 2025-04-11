@@ -14,8 +14,16 @@
 """Utilities for image manipulation.
 
 Helper functions for working with images using the Pillow library."""
+import logging
+import sys
 from PIL import Image
 from gen_v import models
+from gen_v import storage
+
+
+logging.basicConfig(stream=sys.stdout)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 def rescale_image_height(image_path: str, desired_height: int) -> Image:
@@ -197,3 +205,86 @@ def replace_background_color(
       raise ValueError(
           f'Failed to save image to {recolored_image_local_path}: {save_err}'
       ) from save_err
+
+
+def process_and_resize_images(
+    images_uri: str,
+    width: int,
+    height: int,
+    color: models.RGBColor,
+    output_uri: str,
+) -> list[dict]:
+  """Pull images from GCS resize them and upload to a different GCS folder.
+
+
+  Args:
+    images_uri: The GCS URI of the folder containing the input images.
+    width: The desired width of the resized images.
+    height: The desired height of the resized images.
+    color: The background color to use when resizing images.
+    output_uri: The GCS URI of the folder where resized images will be uploaded.
+
+
+  Returns:
+    A list of dictionaries, with processed images (title and resized image URI).
+  """
+  images_uris = storage.retrieve_all_files_from_gcs_folder(images_uri)
+  logger.info('Found %d images', len(images_uris))
+  selected_products = []
+  for img_uri in images_uris:
+    image_file_name = storage.get_file_name_from_gcs_url(img_uri)
+    input_image_local_file_path = storage.download_file_locally(img_uri)
+    img_file_name_no_extension = image_file_name.split('.')[0]
+    resized_image_local_path = (
+        f'{img_file_name_no_extension}-resized-{width}_{height}.png'
+    )
+    place_rescaled_image_on_background(
+        input_image_local_file_path,
+        width,
+        height,
+        color,
+        resized_image_local_path,
+    )
+    resized_image_uri = f'{output_uri}/{resized_image_local_path}'
+    storage.upload_file_to_gcs(resized_image_local_path, resized_image_uri)
+    selected_products.append({
+        'title': image_file_name,
+        'resized_image_uri': resized_image_uri,
+    })
+  return selected_products
+
+
+def recolor_background_and_upload(
+    selected_products: list[dict],
+    output_uri: str,
+    target_color: models.RGBColor,
+    background_color: models.RGBColor,
+) -> None:
+  """Recolors the background of images, uploads them to GCS.
+
+
+  Args:
+      selected_products: A list of dictionaries with products.
+      output_uri: The gcs path to store recolored images.
+      target_color: The color to be replaced
+      background_color: The background color to be used for the new image.
+  """
+  for product in selected_products:
+    resized_image_uri = product['resized_image_uri']
+
+    local_resized_image_path = storage.download_file_locally(resized_image_uri)
+    file_name = storage.get_file_name_from_gcs_url(resized_image_uri)
+    file_name_without_extension, file_extension = file_name.split('.', 1)
+    recolored_image_local_path = (
+        f'{file_name_without_extension}-recolored-'
+        f'{background_color}.{file_extension}'
+    )
+    replace_background_color(
+        local_resized_image_path,
+        target_color,
+        background_color,
+        recolored_image_local_path,
+    )
+    recolored_image_uri = f'gs://{output_uri}/{recolored_image_local_path}'
+    storage.upload_file_to_gcs(recolored_image_local_path, recolored_image_uri)
+    product['recolored_image_uri'] = recolored_image_uri
