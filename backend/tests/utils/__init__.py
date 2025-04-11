@@ -11,20 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Exposes core data models for the gen_v package."""
-from gen_v.models.media import AudioInput
-from gen_v.models.media import ImageInput
-from gen_v.models.media import RGBColor
-from gen_v.models.media import TextInput
-from gen_v.models.media import VideoInput
-from gen_v.models.media import VideoTransition
-
-
-__all__ = [
-    'AudioInput',
-    'ImageInput',
-    'RGBColor',
-    'TextInput',
-    'VideoInput',
-    'VideoTransition',
-]

@@ -13,8 +13,10 @@
 # limitations under the License.
 
 """Pydantic classes for video editing."""
-
+import math
 import pydantic
+from typing import Self
+from typing import Tuple
 
 
 class VideoInput(pydantic.BaseModel):
@@ -144,3 +146,69 @@ class AudioInput(pydantic.BaseModel):
   path: str
   start_time: float = 0.0
   duration: float | None = None
+
+
+class RGBColor(pydantic.BaseModel):
+  """Represents a color in the RGB color space.
+
+  Ensures that red, green, and blue components are integers within the valid
+  range of 0 to 255.
+
+  Attributes:
+    r (int): The red component of the color (0-255).
+    g (int): The green component of the color (0-255).
+    b (int): The blue component of the color (0-255).
+  """
+
+  r: int = pydantic.Field(ge=0, le=255)
+  g: int = pydantic.Field(ge=0, le=255)
+  b: int = pydantic.Field(ge=0, le=255)
+
+  def __str__(self) -> str:
+    """Returns a string representation suitable for filenames."""
+    return f'{self.r}_{self.g}_{self.b}'
+
+  @classmethod
+  def from_tuple(cls, rgb_tuple: tuple[int, int, int]) -> Self:
+    """Creates an RGBColor instance from a tuple of integers.
+
+    Args:
+      rgb_tuple: A tuple containing three integers (r, g, b), each expected to
+        be between 0 and 255.
+
+    Returns:
+      An instance of RGBColor.
+
+    Raises:
+      TypeError: If the input is not a tuple or does not contain exactly three
+        elements.
+      pydantic.ValidationError: If any tuple element is not an integer or is
+        outside the 0-255 range."""
+    if not isinstance(rgb_tuple, tuple) or len(rgb_tuple) != 3:
+      raise TypeError('Input must be a tuple of 3 elements')
+    try:
+      return cls(r=rgb_tuple[0], g=rgb_tuple[1], b=rgb_tuple[2])
+    except pydantic.ValidationError as e:
+      raise e
+
+  def to_tuple(self) -> Tuple[int, int, int]:
+    """Converts the RGBColor instance to a tuple of integers.
+
+    Returns:
+      A tuple containing the (r, g, b) values.
+    """
+    return self.r, self.g, self.b
+
+  def distance_to(self, other_color: Self) -> float:
+    """Calculates the Euclidean distance from this color to another RGB color.
+
+    Args:
+      other_color: The other RGBColor instance to compare against.
+
+    Returns:
+      The Euclidean distance between this color and other_color as a float.
+    """
+    delta_r_sq = (self.r - other_color.r) ** 2
+    delta_g_sq = (self.g - other_color.g) ** 2
+    delta_b_sq = (self.b - other_color.b) ** 2
+    return math.sqrt(delta_r_sq + delta_g_sq + delta_b_sq)
