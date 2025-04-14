@@ -93,3 +93,24 @@ def test_get_gemini_prompt_success_with_image(
   _, call_kwargs = mock_client.models.generate_content.call_args
 
   assert call_kwargs['model'] == test_model_name
+
+
+@mock.patch('gen_v.video.generation.time.sleep')
+@mock.patch('gen_v.video.generation.send_request_to_google_api')
+def test_fetch_operation_success_first_try(
+    mock_send_request, mock_sleep, mock_app_settings
+):
+  """Tests fetch_operation succeeds when API returns 'done': True."""
+  mock_app_settings.fetch_endpoint = 'http://fake-endpoint.com/fetch'
+  lro_name = 'operations/op123'
+  expected_request_data = {'operationName': lro_name}
+  success_response = {'done': True, 'response': {'status': 'COMPLETED'}}
+  mock_send_request.return_value = success_response
+
+  result = generation.fetch_operation(lro_name, mock_app_settings)
+
+  assert result == success_response
+  mock_send_request.assert_called_once_with(
+      mock_app_settings.fetch_endpoint, expected_request_data
+  )
+  mock_sleep.assert_not_called()

@@ -19,6 +19,7 @@ prompts.
 """
 import logging
 import sys
+import time
 
 from google import genai
 import google.auth
@@ -27,6 +28,7 @@ from google.genai import types
 import requests
 
 from gen_v import models
+from gen_v import config
 
 logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger(__name__)
@@ -158,3 +160,35 @@ def compose_videogen_request(request_data: models.VeoApiRequest) -> dict:
       },
   }
   return request_payload
+
+
+def fetch_operation(lro_name: str, settings: config.AppSettings) -> str | None:
+  """Fetches the status of a long-running operation.
+
+  Makes regular pings to the API endpoint to determine the status of the job. It
+  usually takes about 2 mins to generate a request. This function will give up
+  after 30 loops (5 mins).
+
+  Args:
+    lro_name: The name of the long-running operation.
+    settings: An instance of AppSettings containing configuration, including
+      the derived fetch_endpoint.
+
+  Returns:
+    The response from the API containing the operation status.
+
+  """
+  request = {"operationName": lro_name}
+  # The generation usually takes 2 minutes. Loop 30 times, around 5 minutes.
+  max_attempts = 30
+  attempt_interval = 10
+
+  for _ in range(max_attempts):
+    try:
+      resp = send_request_to_google_api(settings.fetch_endpoint, request)
+      if "done" in resp and resp["done"]:
+        return resp
+    except requests.exceptions.HTTPError as e:
+      logger.error("Error while fetching operation: %s", e)
+
+    time.sleep(attempt_interval)

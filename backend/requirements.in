@@ -2,4 +2,5 @@ google-cloud-storage==2.19.0
 google-genai==1.10.0
 pillow==10.4.0
 pydantic==2.11.1
+pydantic-settings==2.8.1
 requests==2.32.3

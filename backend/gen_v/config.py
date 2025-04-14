@@ -19,9 +19,10 @@ configuration related to Google Cloud Platform resources, storage paths,
 and temporary directories.
 """
 import pydantic
+import pydantic_settings
 
 
-class AppSettings(pydantic.BaseSettings):
+class AppSettings(pydantic_settings.BaseSettings):
   """The settings used in the application.
 
   Attributes:
