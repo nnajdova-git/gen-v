@@ -150,3 +150,31 @@ def load_text_clips(video_path: str, text_inputs: list[models.TextInput]):
     finally:
       for text_clip in text_clips:
         text_clip.close()
+
+
+def add_text_clips_to_video(
+    input_video: models.VideoInput,
+    text_inputs: list[models.TextInput],
+    output_video_path: models.VideoInput,
+) -> None:
+  """Adds text to a video clip.
+
+  Args:
+    input_video: Path to the video file.
+    text_inputs: List of TextInput objects, each representing the text to add.
+    output_video_path: Path to save the output video.
+  """
+  local_video_path = gcs.download_file_locally(input_video.path)
+  input_file_name = gcs.get_file_name_from_gcs_url(input_video.path)
+  local_output_video_path = f"/content/output_{input_file_name}"
+
+  for text in text_inputs:
+    local_font_path = gcs.download_file_locally(text.font)
+    text.font = local_font_path
+
+  with load_text_clips(local_video_path, text_inputs) as clips:
+    with mp.CompositeVideoClip(clips) as final_clip:
+      final_clip.write_videofile(local_output_video_path, codec="libx264")
+      output_uri = output_video_path.path
+      gcs.upload_file_to_gcs(local_output_video_path, output_uri)
+      final_clip.close()

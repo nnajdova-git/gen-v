@@ -15,6 +15,7 @@
 from gen_v.video.editing import display_image
 from gen_v.video.editing import overlay_image_on_video
 from gen_v.video.editing import load_text_clips
+from gen_v.video.editing import add_text_clips_to_video
 from gen_v.video.generation import get_gemini_generated_video_prompt
 from gen_v.video.generation import send_request_to_google_api
 
@@ -23,6 +24,7 @@ __all__ = [
     'display_image',
     'overlay_image_on_video',
     'load_text_clips',
+    'add_text_clips_to_video',
     'get_gemini_generated_video_prompt',
     'send_request_to_google_api',
 ]
