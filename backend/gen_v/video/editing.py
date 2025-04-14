@@ -236,9 +236,7 @@ def process_videos_with_overlays_and_text(
     final_video_gcs_path = f"{final_uri}/{gcs_file_name}"
     final_video = models.VideoInput(path=final_video_gcs_path)
 
-    add_text_clips_to_video(
-        image_overlay_video, [promo_text], final_video
-    )
+    add_text_clips_to_video(image_overlay_video, [promo_text], final_video)
 
   with concurrent.futures.ThreadPoolExecutor() as executor:
     executor.map(process_video, videos)
