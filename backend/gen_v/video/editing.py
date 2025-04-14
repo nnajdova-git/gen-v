@@ -22,6 +22,7 @@ from gen_v import models
 from gen_v import storage as gcs
 from gen_v import utils
 import moviepy as mp
+import contextlib
 
 
 def display_image(
@@ -121,3 +122,31 @@ def overlay_image_on_video(
   gcs.upload_file_to_gcs(local_output_video_path, output_uri)
   final_clip.close()
   return output_uri
+
+
+@contextlib.contextmanager
+def load_text_clips(video_path: str, text_inputs: list[models.TextInput]):
+  """Loads text clips from a list of text inputs and a video clip.
+
+  Args:
+    video_path: The path to the video clip to use as a reference for duration.
+    text_inputs: List of TextInput objects.
+  Yields:
+    List of TextClip objects and the video clip.
+  """
+  text_clips = []
+  with mp.VideoFileClip(video_path) as video:
+    for text_input in text_inputs:
+      if not text_input.duration:
+        text_input.duration = video.duration
+      text_clip = mp.TextClip(
+          **text_input.model_dump(exclude={"start_time", "position"})
+      ).with_start(text_input.start_time)
+      text_clip = text_clip.with_position(text_input.position)
+
+      text_clips.append(text_clip)
+    try:
+      yield [video] + text_clips
+    finally:
+      for text_clip in text_clips:
+        text_clip.close()
