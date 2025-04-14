@@ -23,6 +23,7 @@ from gen_v import storage as gcs
 from gen_v import utils
 import moviepy as mp
 import contextlib
+import concurrent.futures
 
 
 def display_image(
@@ -178,3 +179,66 @@ def add_text_clips_to_video(
       output_uri = output_video_path.path
       gcs.upload_file_to_gcs(local_output_video_path, output_uri)
       final_clip.close()
+
+
+def process_videos_with_overlays_and_text(
+    videos: list[dict[str, str]],
+    images: list[models.ImageInput],
+    overlay_text: models.TextInput,
+    overlays_uri: str,
+    final_uri: str,
+) -> None:
+  """Processes videos by adding image and text overlays and uploading to gcs.
+
+  Args:
+      videos: A list of video dictionaries with GCS URI and local file path.
+      images: A list of `ImageInput` image overlays to be added to the videos.
+      overlay_text: A `TextInput` object, defining the text overlay.
+      overlays_uri: The GCS URI where intermediate overlays will be stored.
+      final_uri: The GCS URI where final videos with overlays will be stored.
+
+  Returns:
+      None.
+  """
+  print("process_videos_with_overlays_and_text...")
+
+  def process_video(video: dict[str, str]):
+    """Processes a single video by adding overlays and text.
+
+    Args:
+      video: A dictionary representing a video
+    """
+    print(f"process_video: {video}")
+    local_video_file_path = gcs.download_file_locally(
+        video["gcs_uri"], video["local_file_name"]
+    )
+    local_video_file = models.VideoInput(path=local_video_file_path)
+
+    gcs_file_name = video["local_file_name"]
+    gcs_image_overlay_video_path = f"{overlays_uri}/{gcs_file_name}"
+    image_overlay_video = models.VideoInput(
+        path=f"gs://{gcs_image_overlay_video_path}"
+    )
+
+    video.overlay_image_on_video(local_video_file, images, image_overlay_video)
+
+    promo_text = models.TextInput(
+        text=video["promo_text"],
+        font=overlay_text.font,
+        font_size=overlay_text.font_size,
+        start_time=overlay_text.start_time,
+        duration=overlay_text.duration,
+        color=overlay_text.color,
+        position=overlay_text.position,
+    )
+
+    # Define the GCS path for the final video with text overlay.
+    final_video_gcs_path = f"{final_uri}/{gcs_file_name}"
+    final_video = models.VideoInput(path=final_video_gcs_path)
+
+    video.add_text_clips_to_video(
+        image_overlay_video, [promo_text], final_video
+    )
+
+  with concurrent.futures.ThreadPoolExecutor() as executor:
+    executor.map(process_video, videos)
