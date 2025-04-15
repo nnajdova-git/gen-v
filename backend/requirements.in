@@ -1,5 +1,7 @@
 google-cloud-storage==2.19.0
 google-genai==1.10.0
+mediapy==1.2.2
+moviepy==2.1.2
 pillow==10.4.0
 pydantic==2.11.1
 pydantic-settings==2.8.1
