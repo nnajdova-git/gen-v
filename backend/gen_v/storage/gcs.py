@@ -72,22 +72,18 @@ def download_file_locally(
   return local_file_path
 
 
-def download_files(
-    gcs_uris: list[str], storage_client: storage.Client = None
-) -> list[str]:
+def download_files(gcs_uris: list[str]) -> list[str]:
   """Downloads files from Google Cloud Storage to the local file system.
 
   Args:
     gcs_uris: A list of Google Cloud Storage URIs of the files to download.
-    storage_client: The Google Cloud Storage client.
 
   Returns:
     A list of local file paths where the files were saved.
   """
-  storage_client = storage_client or storage.Client()
   local_file_paths = []
   for gcs_uri in gcs_uris:
-    local_file_paths.append(download_files(gcs_uri, storage_client))
+    local_file_paths.append(download_file_locally(gcs_uri))
   return local_file_paths
 
 

@@ -4,4 +4,5 @@ mediapy==1.2.2
 moviepy==2.1.2
 pillow==10.4.0
 pydantic==2.11.1
+pydantic-settings==2.8.1
 requests==2.32.3
