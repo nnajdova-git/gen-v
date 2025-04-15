@@ -40,6 +40,12 @@ def veo_api_request_data_fixture() -> models.VeoApiRequest:
   )
 
 
+@pytest.fixture(name='product_data')
+def product_data_fixture() -> dict[str, any]:
+  """Provides sample product data."""
+  yield {'title': 'Super Dog Toy'}
+
+
 def test_send_request_to_google_api(mock_requests_post):
   mock_api_endpoint = 'https://europe-west2-aiplatform.googleapis.com/v1'
   mock_data = {'key': 'value'}
@@ -161,3 +167,68 @@ def test_image_to_video_success(
 
   mock_fetch.assert_called_once_with(lro_name, mock_app_settings)
   assert result == final_response
+
+
+@mock.patch('gen_v.video.generation.storage.download_file_locally')
+@mock.patch('gen_v.storage.get_file_name_from_gcs_url')
+@mock.patch('gen_v.video.generation.image_to_video')
+def test_generate_videos_and_download_success_simple(
+    mock_img_to_vid,
+    mock_get_filename,
+    mock_download,
+    veo_api_request_data,
+    mock_app_settings,
+    product_data,
+):
+  """Tests the simple success path of generate_videos_and_download."""
+  output_prefix = 'promo_v1'
+  input_image_filename = 'image_dog.png'
+  generated_video_gcs_uri = 'gs://test-bucket/outputs/gen_video_abc.mp4'
+  generated_video_filename = 'gen_video_abc.mp4'
+
+  mock_img_to_vid.return_value = {
+      'response': {'videos': [{'gcsUri': generated_video_gcs_uri}]}
+  }
+
+  mock_get_filename.side_effect = [
+      input_image_filename,
+      generated_video_filename,
+  ]
+
+  expected_local_path = (
+      f'{input_image_filename}-{output_prefix}-{generated_video_filename}'
+  )
+  expected_local_filename = expected_local_path.rsplit('/', maxsplit=1)[-1]
+
+  result = generation.generate_videos_and_download(
+      veo_request=veo_api_request_data,
+      settings=mock_app_settings,
+      output_file_prefix=output_prefix,
+      product=product_data,
+  )
+
+  mock_img_to_vid.assert_called_once_with(
+      veo_api_request_data, mock_app_settings
+  )
+
+  assert mock_get_filename.call_count == 2
+  mock_get_filename.assert_has_calls([
+      mock.call(veo_api_request_data.image_uri),
+      mock.call(generated_video_gcs_uri),
+  ])
+
+  mock_download.assert_called_once_with(
+      generated_video_gcs_uri, expected_local_path
+  )
+
+  assert isinstance(result, list)
+  assert len(result) == 1
+
+  expected_output_item = {
+      'gcs_uri': generated_video_gcs_uri,
+      'local_file': expected_local_path,
+      'local_file_name': expected_local_filename,
+      'product_title': product_data['title'],
+      'promo_text': '',
+  }
+  assert result[0] == expected_output_item

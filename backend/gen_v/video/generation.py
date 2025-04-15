@@ -27,8 +27,10 @@ from google.auth.transport import requests as google_requests
 from google.genai import types
 import requests
 
-from gen_v import models
 from gen_v import config
+from gen_v import models
+from gen_v import storage
+
 
 logging.basicConfig(stream=sys.stdout)
 logger = logging.getLogger(__name__)
@@ -201,7 +203,8 @@ def image_to_video(
   """Generates a video from an image using the Video Generation API.
 
   Args:
-    veo_request: The request to Veo.
+    veo_request: The request model to Veo containing information such as the
+      prompt.
     settings: An instance of AppSettings containing configuration, including
       the derived fetch_endpoint.
 
@@ -219,3 +222,49 @@ def image_to_video(
     return fetch_operation(resp["name"], settings)
   except requests.exceptions.HTTPError as e:
     logger.error("Error sending image_to_video request: %s", e)
+
+
+def generate_videos_and_download(
+    veo_request: models.VeoApiRequest,
+    settings: config.AppSettings,
+    output_file_prefix: str,
+    product: dict[str, any],
+) -> list[dict[str, any]]:
+  """Generates videos, downloads them, and returns their information.
+
+  Args:
+    veo_request: The request model to Veo containing information such as the
+    prompt.
+    settings: An instance of AppSettings containing configuration, including
+    the derived fetch_endpoint.
+    output_file_prefix: The prefix for output video file names.
+    product: A dictionary containing product information.
+
+  Returns:
+    A list of dictionaries, containing information about a generated video
+  """
+  output_videos = image_to_video(veo_request, settings)
+  file_name = storage.get_file_name_from_gcs_url(veo_request.image_uri)
+
+  output_video_files = []
+  logger.info(
+      "Generated videos %s for %s",
+      len(output_videos["response"]["videos"]),
+      file_name,
+  )
+
+  for video in output_videos["response"]["videos"]:
+    veo_name = storage.get_file_name_from_gcs_url(video["gcsUri"])
+    output_video_local_path = f"{file_name}-{output_file_prefix}-{veo_name}"
+
+    storage.download_file_locally(video["gcsUri"], output_video_local_path)
+
+    output_video_files.append({
+        "gcs_uri": video["gcsUri"],
+        "local_file": output_video_local_path,
+        "local_file_name": output_video_local_path.rsplit("/", maxsplit=1)[-1],
+        "product_title": product["title"],
+        "promo_text": "",
+    })
+
+  return output_video_files
