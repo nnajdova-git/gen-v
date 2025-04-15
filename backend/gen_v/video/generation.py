@@ -192,3 +192,30 @@ def fetch_operation(lro_name: str, settings: config.AppSettings) -> str | None:
       logger.error("Error while fetching operation: %s", e)
 
     time.sleep(attempt_interval)
+
+
+def image_to_video(
+    veo_request: models.VeoApiRequest,
+    settings: config.AppSettings,
+) -> str | None:
+  """Generates a video from an image using the Video Generation API.
+
+  Args:
+    veo_request: The request to Veo.
+    settings: An instance of AppSettings containing configuration, including
+      the derived fetch_endpoint.
+
+  Returns:
+    A dictionary containing the response from the Video Generation API,
+    including the operation details and generated video information.
+
+  """
+  request_payload = veo_request.to_api_payload()
+  logger.info("Making image to video request with this payload")
+  logger.info(request_payload)
+
+  try:
+    resp = send_request_to_google_api(settings.fetch_endpoint, request_payload)
+    return fetch_operation(resp["name"], settings)
+  except requests.exceptions.HTTPError as e:
+    logger.error("Error sending image_to_video request: %s", e)

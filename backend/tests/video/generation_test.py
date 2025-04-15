@@ -27,6 +27,19 @@ def mock_requests_post_fixture():
     yield requests_post
 
 
+@pytest.fixture(name='veo_api_request_data')
+def veo_api_request_data_fixture() -> models.VeoApiRequest:
+  """Provides a sample VeoApiRequest object."""
+  yield models.VeoApiRequest(
+      prompt='A running dog',
+      image_uri='gs://test-bucket/test-folder/input-images/dog.png',
+      gcs_uri='gs://test-bucket/test-folder/output-videos/',
+      duration=4,
+      sample_count=1,
+      aspect_ratio='9:16',
+  )
+
+
 def test_send_request_to_google_api(mock_requests_post):
   mock_api_endpoint = 'https://europe-west2-aiplatform.googleapis.com/v1'
   mock_data = {'key': 'value'}
@@ -114,3 +127,37 @@ def test_fetch_operation_success_first_try(
       mock_app_settings.fetch_endpoint, expected_request_data
   )
   mock_sleep.assert_not_called()
+
+
+@mock.patch('gen_v.video.generation.fetch_operation')
+@mock.patch('gen_v.video.generation.send_request_to_google_api')
+def test_image_to_video_success(
+    mock_send_request,
+    mock_fetch,
+    veo_api_request_data,
+    mock_app_settings,
+):
+  """Tests the successful execution path of image_to_video."""
+  lro_name = 'operations/123456789'
+  initial_response = {'name': lro_name}
+  final_response = {
+      'done': True,
+      'response': {
+          'predictions': [{'outputVideoGcsUri': 'gs://test-bucket/video.mp4'}]
+      },
+      'metadata': {},
+      'name': lro_name,
+  }
+  mock_send_request.return_value = initial_response
+  mock_fetch.return_value = final_response
+
+  expected_payload = veo_api_request_data.to_api_payload()
+
+  result = generation.image_to_video(veo_api_request_data, mock_app_settings)
+
+  mock_send_request.assert_called_once_with(
+      mock_app_settings.fetch_endpoint, expected_payload
+  )
+
+  mock_fetch.assert_called_once_with(lro_name, mock_app_settings)
+  assert result == final_response
