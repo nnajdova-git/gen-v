@@ -15,9 +15,11 @@
 from gen_v.utils.image import hex_to_rgb
 from gen_v.utils.image import process_and_resize_images
 from gen_v.utils.image import recolor_background_and_upload
+from gen_v.utils.image import rescale_image_height
 
 __all__ = [
     'hex_to_rgb',
     'process_and_resize_images',
     'recolor_background_and_upload',
+    'rescale_image_height',
 ]
