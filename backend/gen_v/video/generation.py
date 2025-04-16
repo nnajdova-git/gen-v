@@ -17,6 +17,8 @@ This module handles interactions with services like Vertex AI Gemini for prompt
 generation and the Video Generation API for creating video clips from images and
 prompts.
 """
+import concurrent.futures
+import functools
 import logging
 import sys
 import time
@@ -268,3 +270,64 @@ def generate_videos_and_download(
     })
 
   return output_video_files
+
+
+def generate_video_for_item(
+    item_data: dict, settings: config.AppSettings
+) -> list[dict]:
+  """Generates video(s) for a single item/entity based on configuration.
+
+  Args:
+    item_data: A dictionary containing data about the item.
+      Expected keys: 'recolored_image_uri'
+    settings: An instance of AppSettings containing configuration, including
+      the derived fetch_endpoint.
+
+  Returns:
+    A list of dictionaries containing information about the generated video(s),
+      or an empty list if an error occurs during generation for this item.
+  """
+  if "recolored_image_uri" not in item_data:
+    logger.warning(
+        "Skipping item due to missing 'recolored_image_uri': %s", item_data
+    )
+    return []
+
+  # TODO: write me
+  print(settings)
+  return []
+
+
+def generate_videos_concurrently(
+    items_to_process: list[dict], settings: config.AppSettings
+) -> list[dict]:
+  """Generates videos for a list of items/entities concurrently.
+
+  Args:
+    items_to_process: A list of dictionaries, each containing data for an item.
+      Each dictionary is passed to generate_video_for_item.
+    settings: An instance of AppSettings containing configuration, including
+      the derived fetch_endpoint.
+
+  Returns:
+    A flat list containing dictionaries of all successfully generated video
+      information from all items.
+  """
+  logger.info(
+      "Starting concurrent video generation for %d items.",
+      len(items_to_process),
+  )
+  all_generated_videos = []
+
+  worker_func = functools.partial(generate_video_for_item, settings=settings)
+
+  with concurrent.futures.ThreadPoolExecutor() as executor:
+    results_iterator = executor.map(worker_func, items_to_process)
+    for video_list in results_iterator:
+      if video_list:
+        all_generated_videos.extend(video_list)
+  logger.info(
+      "Finished concurrent video generation. Total videos generated: %d",
+      len(all_generated_videos),
+  )
+  return all_generated_videos

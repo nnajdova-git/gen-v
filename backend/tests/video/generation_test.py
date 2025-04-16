@@ -232,3 +232,40 @@ def test_generate_videos_and_download_success_simple(
       'promo_text': '',
   }
   assert result[0] == expected_output_item
+
+
+@mock.patch('gen_v.video.generation.generate_video_for_item', autospec=True)
+def test_generate_videos_concurrently_success(
+    mock_worker_func, mock_app_settings
+):
+  """Tests successful concurrent generation and result aggregation."""
+  items_to_process = [
+      {'recolored_image_uri': 'gs://b/img1.png'},
+      {'recolored_image_uri': 'gs://b/img2.png'},
+      {'recolored_image_uri': 'gs://b/img3.png'},
+  ]
+
+  # 1st item had 1 result, 2nd failed and skipped/returned an empty list, 3rd
+  # returned 2 results.
+  mock_worker_results = [
+      [{'gcs_uri': 'gs://v/vid1a.mp4'}],
+      [],
+      [
+          {'gcs_uri': 'gs://v/vid3a.mp4'},
+          {'gcs_uri': 'gs://v/vid3b.mp4'},
+      ],
+  ]
+  mock_worker_func.side_effect = mock_worker_results
+
+  expected_final_list = [
+      {'gcs_uri': 'gs://v/vid1a.mp4'},
+      {'gcs_uri': 'gs://v/vid3a.mp4'},
+      {'gcs_uri': 'gs://v/vid3b.mp4'},
+  ]
+
+  final_videos = generation.generate_videos_concurrently(
+      items_to_process, mock_app_settings
+  )
+
+  assert final_videos == expected_final_list
+  assert mock_worker_func.call_count == len(items_to_process)
