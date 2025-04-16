@@ -20,6 +20,7 @@ from gen_v.video.editing import overlay_image_on_video
 from gen_v.video.editing import process_videos_with_overlays_and_text
 from gen_v.video.generation import fetch_operation
 from gen_v.video.generation import generate_videos_and_download
+from gen_v.video.generation import generate_videos_concurrently
 from gen_v.video.generation import get_gemini_generated_video_prompt
 from gen_v.video.generation import image_to_video
 from gen_v.video.generation import send_request_to_google_api
@@ -30,6 +31,7 @@ __all__ = [
     'display_image',
     'fetch_operation',
     'generate_videos_and_download',
+    'generate_videos_concurrently',
     'get_gemini_generated_video_prompt',
     'image_to_video',
     'overlay_image_on_video',
