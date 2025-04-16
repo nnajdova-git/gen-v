@@ -11,17 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Exposes core utils for the gen_v package."""
-from gen_v.utils.dates import get_current_week_year_str
-from gen_v.utils.image import hex_to_rgb
-from gen_v.utils.image import process_and_resize_images
-from gen_v.utils.image import recolor_background_and_upload
-from gen_v.utils.image import rescale_image_height
+"""Unit tests for date utility functions."""
+from datetime import date
+import pytest
+from gen_v.utils import dates
 
-__all__ = [
-    'get_current_week_year_str',
-    'hex_to_rgb',
-    'process_and_resize_images',
-    'recolor_background_and_upload',
-    'rescale_image_height',
-]
+
+@pytest.mark.parametrize(
+    'test_date, expected_week',
+    [
+        (date(2024, 12, 29), 'week52-2024'),
+        (date(2025, 1, 1), 'week1-2025'),
+        (date(2025, 4, 16), 'week16-2025'),
+    ],
+)
+def test_get_current_week_year_str(test_date, expected_week):
+  """Tests that the function returns the correct week-year string."""
+  response = dates.get_current_week_year_str(test_date)
+  assert response == expected_week

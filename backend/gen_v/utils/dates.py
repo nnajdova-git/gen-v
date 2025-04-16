@@ -11,17 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Exposes core utils for the gen_v package."""
-from gen_v.utils.dates import get_current_week_year_str
-from gen_v.utils.image import hex_to_rgb
-from gen_v.utils.image import process_and_resize_images
-from gen_v.utils.image import recolor_background_and_upload
-from gen_v.utils.image import rescale_image_height
+"""Date related utility functions."""
+from datetime import date
 
-__all__ = [
-    'get_current_week_year_str',
-    'hex_to_rgb',
-    'process_and_resize_images',
-    'recolor_background_and_upload',
-    'rescale_image_height',
-]
+
+def get_current_week_year_str(date_obj: date | None = None) -> str:
+  """Generates a string representing the current ISO week and year.
+
+  Format: "weekW-YYYY" (e.g., "week16-2025") based on the current date.
+
+  Args:
+    date_obj: The date object to format.
+
+  Returns:
+    The formatted week and year string.
+  """
+  date_obj = date_obj or date.today()
+  current_year, current_week, _ = date_obj.isocalendar()
+  week_and_year = f"week{current_week}-{current_year}"
+  return week_and_year

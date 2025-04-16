@@ -18,6 +18,7 @@ generation and the Video Generation API for creating video clips from images and
 prompts.
 """
 import concurrent.futures
+from datetime import date
 import functools
 import logging
 import sys
@@ -32,6 +33,7 @@ import requests
 from gen_v import config
 from gen_v import models
 from gen_v import storage
+from gen_v import utils
 
 
 logging.basicConfig(stream=sys.stdout)
@@ -293,9 +295,67 @@ def generate_video_for_item(
     )
     return []
 
-  # TODO: write me
-  print(settings)
-  return []
+  recolored_image_uri = item_data["recolored_image_uri"]
+  logger.info("Processing item: %s", recolored_image_uri)
+
+  recolored_image_local_path = storage.download_file_locally(
+      recolored_image_uri
+  )
+
+  base_prompt_text = settings.selected_prompt_text
+
+  final_prompt = ""
+  if settings.prompt_type == "CUSTOM":
+    final_prompt = base_prompt_text
+  elif settings.prompt_type == "GEMINI":
+    gemini_prompt_request = models.GeminiPromptRequest(
+        prompt_text=base_prompt_text,
+        image_file_path=recolored_image_local_path,
+        model_name=settings.gemini_model_name,
+    )
+    final_prompt = get_gemini_generated_video_prompt(
+        gemini_prompt_request,
+        project_id=settings.gcp_project_id,
+        location=settings.gcp_region,
+    )
+  else:
+    logger.error("Invalid prompt type: %s", settings.prompt_type)
+
+  logger.debug(
+      'Running prompt "%s" for aspect ratio "%s", and orientation "%s"',
+      final_prompt,
+      settings.aspect_ratio,
+      settings.video_orientation,
+  )
+
+  output_gcs_uri = settings.veo_output_gcs_uri_base
+  if settings.veo_add_date_to_output_path:
+    date_component = utils.get_current_week_year_str(date.today())
+    output_gcs_uri += f"{date_component}/"
+
+  veo_request = models.VeoApiRequest(
+      prompt=final_prompt,
+      image_uri=recolored_image_uri,
+      gcs_uri=output_gcs_uri,
+      duration=settings.veo_duration_seconds,
+      sample_count=settings.veo_sample_count,
+      aspect_ratio=settings.aspect_ratio,
+      negative_prompt=settings.veo_negative_prompt,
+      prompt_enhance=settings.veo_prompt_enhance,
+      person_generation=settings.veo_person_generation,
+  )
+  generated_videos = generate_videos_and_download(
+      veo_request=veo_request,
+      settings=settings,
+      output_file_prefix=settings.output_file_prefix,
+      product=item_data,
+  )
+  logging.info(
+      "Successfully generated %d video(s) for item: %s",
+      len(generated_videos),
+      recolored_image_uri,
+  )
+  return generated_videos
 
 
 def generate_videos_concurrently(

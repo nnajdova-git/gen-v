@@ -46,6 +46,28 @@ def product_data_fixture() -> dict[str, any]:
   yield {'title': 'Super Dog Toy'}
 
 
+@pytest.fixture(name='mock_item_data')
+def mock_item_data_fixture() -> dict:
+  """Provides sample item data for testing."""
+  yield {
+      'recolored_image_uri': 'gs://my-bucket/my-folder/recolored/item1.png',
+      'title': 'Test Item 1',
+  }
+
+
+@pytest.fixture(name='mock_generated_video_list')
+def mock_generated_video_list_fixture() -> list[dict]:
+  """Provides a sample list returned by generate_videos_and_download."""
+  yield [{
+      'gcs_uri': (
+          'gs://my-bucket/my-folder/output-videos/veo/item1-prefix-vid1.mp4'
+      ),
+      'local_file': '/tmp/item1-prefix-vid1.mp4',
+      'local_file_name': 'item1-prefix-vid1.mp4',
+      'product_title': 'Test Item 1',
+  }]
+
+
 def test_send_request_to_google_api(mock_requests_post):
   mock_api_endpoint = 'https://europe-west2-aiplatform.googleapis.com/v1'
   mock_data = {'key': 'value'}
@@ -120,7 +142,6 @@ def test_fetch_operation_success_first_try(
     mock_send_request, mock_sleep, mock_app_settings
 ):
   """Tests fetch_operation succeeds when API returns 'done': True."""
-  mock_app_settings.fetch_endpoint = 'http://fake-endpoint.com/fetch'
   lro_name = 'operations/op123'
   expected_request_data = {'operationName': lro_name}
   success_response = {'done': True, 'response': {'status': 'COMPLETED'}}
@@ -269,3 +290,61 @@ def test_generate_videos_concurrently_success(
 
   assert final_videos == expected_final_list
   assert mock_worker_func.call_count == len(items_to_process)
+
+
+@mock.patch('gen_v.video.generation.generate_videos_and_download')
+@mock.patch('gen_v.video.generation.utils.get_current_week_year_str')
+@mock.patch('gen_v.video.generation.get_gemini_generated_video_prompt')
+@mock.patch('gen_v.video.generation.storage.download_file_locally')
+def test_generate_video_for_item_custom_prompt(
+    mock_download,
+    mock_get_gemini_prompt,
+    mock_get_date_str,
+    mock_generate_and_download,
+    mock_item_data,
+    mock_app_settings,
+    mock_generated_video_list,
+    png_file_in_fs,
+):
+  """Tests the happy path using a CUSTOM prompt."""
+  mock_app_settings.prompt_type = 'CUSTOM'
+  mock_download.return_value = png_file_in_fs
+  mock_get_gemini_prompt.return_value = mock_app_settings.selected_prompt_text
+  mock_generate_and_download.return_value = mock_generated_video_list
+
+  result = generation.generate_video_for_item(mock_item_data, mock_app_settings)
+
+  assert result == mock_generated_video_list
+  mock_download.assert_called_once_with(mock_item_data['recolored_image_uri'])
+  mock_get_gemini_prompt.assert_not_called()
+  mock_get_date_str.assert_called_once()
+  mock_generate_and_download.assert_called_once()
+
+
+@mock.patch('gen_v.video.generation.generate_videos_and_download')
+@mock.patch('gen_v.video.generation.utils.get_current_week_year_str')
+@mock.patch('gen_v.video.generation.get_gemini_generated_video_prompt')
+@mock.patch('gen_v.video.generation.storage.download_file_locally')
+def test_generate_video_for_item_gemini_prompt_with_date(
+    mock_download,
+    mock_get_gemini_prompt,
+    mock_get_date_str,
+    mock_generate_and_download,
+    mock_item_data,
+    mock_app_settings,
+    mock_generated_video_list,
+    png_file_in_fs,
+):
+  """Tests the happy path using a GEMINI prompt."""
+  mock_app_settings.prompt_type = 'GEMINI'
+  mock_download.return_value = png_file_in_fs
+  mock_get_gemini_prompt.return_value = mock_app_settings.selected_prompt_text
+  mock_generate_and_download.return_value = mock_generated_video_list
+
+  result = generation.generate_video_for_item(mock_item_data, mock_app_settings)
+
+  assert result == mock_generated_video_list
+  mock_download.assert_called_once_with(mock_item_data['recolored_image_uri'])
+  mock_get_gemini_prompt.assert_called_once()
+  mock_get_date_str.assert_called_once()
+  mock_generate_and_download.assert_called_once()
