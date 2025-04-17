@@ -127,7 +127,7 @@ class VeoApiRequest(pydantic.BaseModel):
     if self.image_uri:
       instance['image'] = {
           'gcsUri': self.image_uri,
-          'mimeType': image_mime_type,
+          'mimeType': f'image/{image_mime_type}',
       }
 
     payload = {

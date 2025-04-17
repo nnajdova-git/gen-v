@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for the video models."""
-from unittest import mock
 import pytest
 from gen_v import config
 
@@ -29,9 +28,10 @@ def png_file_in_fs_fixture(fs):
 
 @pytest.fixture(name='mock_app_settings')
 def mock_app_settings_fixture():
-  """Pytest fixture providing a mocked AppSettings instance."""
-  settings = mock.MagicMock(spec=config.AppSettings)
-  settings.gcs_project_id = 'my-project'
-  settings.gcp_bucket_name = 'my-bucket'
-  settings.gcs_folder_name = 'my-folder'
+  """Pytest fixture providing an AppSettings instance."""
+  settings = config.AppSettings(
+      gcp_project_id='my-project',
+      gcp_bucket_name='my-bucket',
+      gcs_folder_name='my-folder',
+  )
   yield settings
