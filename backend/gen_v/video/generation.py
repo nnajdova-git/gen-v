@@ -76,8 +76,8 @@ def send_request_to_google_api(
     access_token = get_access_token()
 
   headers = {
-      "Authorization": f"Bearer {access_token}",
-      "Content-Type": "application/json",
+      'Authorization': f'Bearer {access_token}',
+      'Content-Type': 'application/json',
   }
 
   response = requests.post(
@@ -112,7 +112,7 @@ def get_gemini_generated_video_prompt(
   if client is None:
     if not project_id or not location:
       raise ValueError(
-          "project_id and location must be provided if client is None"
+          'project_id and location must be provided if client is None'
       )
     client = genai.Client(vertexai=True, project=project_id, location=location)
 
@@ -124,7 +124,7 @@ def get_gemini_generated_video_prompt(
         )
     )
   else:
-    logger.warning("No image found, sending only the prompt.")
+    logger.warning('No image found, sending only the prompt.')
 
   response = client.models.generate_content(
       model=request_data.model_name,
@@ -133,39 +133,8 @@ def get_gemini_generated_video_prompt(
           media_resolution=types.MediaResolution.MEDIA_RESOLUTION_LOW,
       ),
   )
-  logger.info("The response is: %s", response.text)
+  logger.info('The response is: %s', response.text)
   return response.text
-
-
-def compose_videogen_request(request_data: models.VeoApiRequest) -> dict:
-  """Composes a request payload for the Video Generation API from input data.
-
-  Args:
-      request_data: A VeoApiRequest object containing all necessary parameters.
-
-  Returns:
-      A dictionary representing the JSON request payload.
-  """
-  instance = {"prompt": request_data.prompt}
-  # Access image_uri from the model
-  if request_data.image_uri:
-    # Note: Still hardcoding png here, could be enhanced later if needed
-    instance["image"] = {"gcsUri": request_data.image_uri, "mimeType": "png"}
-
-  # Build request dictionary using attributes from the model instance
-  request_payload = {
-      "instances": [instance],
-      "parameters": {
-          "storageUri": request_data.gcs_uri,
-          "durationSeconds": request_data.duration,
-          "sampleCount": request_data.sample_count,
-          "aspectRatio": request_data.aspect_ratio,
-          "negativePrompt": request_data.negative_prompt,
-          "prompt_enhance": request_data.prompt_enhance,
-          "personGeneration": request_data.person_generation,
-      },
-  }
-  return request_payload
 
 
 def fetch_operation(lro_name: str, settings: config.AppSettings) -> str | None:
@@ -184,7 +153,7 @@ def fetch_operation(lro_name: str, settings: config.AppSettings) -> str | None:
     The response from the API containing the operation status.
 
   """
-  request = {"operationName": lro_name}
+  request = {'operationName': lro_name}
   # The generation usually takes 2 minutes. Loop 30 times, around 5 minutes.
   max_attempts = 30
   attempt_interval = 10
@@ -192,10 +161,10 @@ def fetch_operation(lro_name: str, settings: config.AppSettings) -> str | None:
   for _ in range(max_attempts):
     try:
       resp = send_request_to_google_api(settings.fetch_endpoint, request)
-      if "done" in resp and resp["done"]:
+      if 'done' in resp and resp['done']:
         return resp
     except requests.exceptions.HTTPError as e:
-      logger.error("Error while fetching operation: %s", e)
+      logger.error('Error while fetching operation: %s', e)
 
     time.sleep(attempt_interval)
 
@@ -218,14 +187,14 @@ def image_to_video(
 
   """
   request_payload = veo_request.to_api_payload()
-  logger.info("Making image to video request with this payload")
+  logger.info('Making image to video request with this payload')
   logger.info(request_payload)
 
   try:
     resp = send_request_to_google_api(settings.fetch_endpoint, request_payload)
-    return fetch_operation(resp["name"], settings)
+    return fetch_operation(resp['name'], settings)
   except requests.exceptions.HTTPError as e:
-    logger.error("Error sending image_to_video request: %s", e)
+    logger.error('Error sending image_to_video request: %s', e)
 
 
 def generate_videos_and_download(
@@ -252,23 +221,23 @@ def generate_videos_and_download(
 
   output_video_files = []
   logger.info(
-      "Generated videos %s for %s",
-      len(output_videos["response"]["videos"]),
+      'Generated videos %s for %s',
+      len(output_videos['response']['videos']),
       file_name,
   )
 
-  for video in output_videos["response"]["videos"]:
-    veo_name = storage.get_file_name_from_gcs_url(video["gcsUri"])
-    output_video_local_path = f"{file_name}-{output_file_prefix}-{veo_name}"
+  for video in output_videos['response']['videos']:
+    veo_name = storage.get_file_name_from_gcs_url(video['gcsUri'])
+    output_video_local_path = f'{file_name}-{output_file_prefix}-{veo_name}'
 
-    storage.download_file_locally(video["gcsUri"], output_video_local_path)
+    storage.download_file_locally(video['gcsUri'], output_video_local_path)
 
     output_video_files.append({
-        "gcs_uri": video["gcsUri"],
-        "local_file": output_video_local_path,
-        "local_file_name": output_video_local_path.rsplit("/", maxsplit=1)[-1],
-        "product_title": product["title"],
-        "promo_text": "",
+        'gcs_uri': video['gcsUri'],
+        'local_file': output_video_local_path,
+        'local_file_name': output_video_local_path.rsplit('/', maxsplit=1)[-1],
+        'product_title': product['title'],
+        'promo_text': '',
     })
 
   return output_video_files
@@ -289,14 +258,14 @@ def generate_video_for_item(
     A list of dictionaries containing information about the generated video(s),
       or an empty list if an error occurs during generation for this item.
   """
-  if "recolored_image_uri" not in item_data:
+  if 'recolored_image_uri' not in item_data:
     logger.warning(
         "Skipping item due to missing 'recolored_image_uri': %s", item_data
     )
     return []
 
-  recolored_image_uri = item_data["recolored_image_uri"]
-  logger.info("Processing item: %s", recolored_image_uri)
+  recolored_image_uri = item_data['recolored_image_uri']
+  logger.info('Processing item: %s', recolored_image_uri)
 
   recolored_image_local_path = storage.download_file_locally(
       recolored_image_uri
@@ -304,10 +273,10 @@ def generate_video_for_item(
 
   base_prompt_text = settings.selected_prompt_text
 
-  final_prompt = ""
-  if settings.prompt_type == "CUSTOM":
+  final_prompt = ''
+  if settings.prompt_type == 'CUSTOM':
     final_prompt = base_prompt_text
-  elif settings.prompt_type == "GEMINI":
+  elif settings.prompt_type == 'GEMINI':
     gemini_prompt_request = models.GeminiPromptRequest(
         prompt_text=base_prompt_text,
         image_file_path=recolored_image_local_path,
@@ -319,7 +288,7 @@ def generate_video_for_item(
         location=settings.gcp_region,
     )
   else:
-    logger.error("Invalid prompt type: %s", settings.prompt_type)
+    logger.error('Invalid prompt type: %s', settings.prompt_type)
 
   logger.debug(
       'Running prompt "%s" for aspect ratio "%s", and orientation "%s"',
@@ -331,7 +300,7 @@ def generate_video_for_item(
   output_gcs_uri = settings.veo_output_gcs_uri_base
   if settings.veo_add_date_to_output_path:
     date_component = utils.get_current_week_year_str(date.today())
-    output_gcs_uri += f"{date_component}/"
+    output_gcs_uri += f'{date_component}/'
 
   veo_request = models.VeoApiRequest(
       prompt=final_prompt,
@@ -351,7 +320,7 @@ def generate_video_for_item(
       product=item_data,
   )
   logging.info(
-      "Successfully generated %d video(s) for item: %s",
+      'Successfully generated %d video(s) for item: %s',
       len(generated_videos),
       recolored_image_uri,
   )
@@ -374,7 +343,7 @@ def generate_videos_concurrently(
       information from all items.
   """
   logger.info(
-      "Starting concurrent video generation for %d items.",
+      'Starting concurrent video generation for %d items.',
       len(items_to_process),
   )
   all_generated_videos = []
@@ -387,7 +356,7 @@ def generate_videos_concurrently(
       if video_list:
         all_generated_videos.extend(video_list)
   logger.info(
-      "Finished concurrent video generation. Total videos generated: %d",
+      'Finished concurrent video generation. Total videos generated: %d',
       len(all_generated_videos),
   )
   return all_generated_videos

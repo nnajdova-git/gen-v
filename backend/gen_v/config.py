@@ -94,7 +94,7 @@ class AppSettings(pydantic_settings.BaseSettings):
   @property
   def video_model_uri(self) -> str:
     return (
-        f"https://{self.gcp_region}-aiplatform.googleapis.com/v1beta1/"
+        f"https://{self.gcp_region}-aiplatform.googleapis.com/v1/"
         f"projects/{self.gcp_project_id}/locations/{self.gcp_region}/"
         f"publishers/google/models/{self.veo_model_name}"
     )
