@@ -191,7 +191,9 @@ def image_to_video(
   logger.info(request_payload)
 
   try:
-    resp = send_request_to_google_api(settings.fetch_endpoint, request_payload)
+    resp = send_request_to_google_api(
+        settings.prediction_endpoint, request_payload
+    )
     return fetch_operation(resp['name'], settings)
   except requests.exceptions.HTTPError as e:
     logger.error('Error sending image_to_video request: %s', e)

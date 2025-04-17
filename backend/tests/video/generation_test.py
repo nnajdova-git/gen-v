@@ -183,7 +183,7 @@ def test_image_to_video_success(
   result = generation.image_to_video(veo_api_request_data, mock_app_settings)
 
   mock_send_request.assert_called_once_with(
-      mock_app_settings.fetch_endpoint, expected_payload
+      mock_app_settings.prediction_endpoint, expected_payload
   )
 
   mock_fetch.assert_called_once_with(lro_name, mock_app_settings)
