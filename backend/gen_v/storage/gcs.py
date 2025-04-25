@@ -196,4 +196,3 @@ def create_gcs_folders_in_subfolder(bucket_name, subfolder_name, folder_names):
           f"Folder '{folder_name}' created within subfolder '{subfolder_name}'"
           f" in bucket '{bucket_name}'."
       )
-
