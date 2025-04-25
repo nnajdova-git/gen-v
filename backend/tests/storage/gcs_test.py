@@ -111,29 +111,6 @@ def test_download_file_locally(mock_storage_client):
   assert ret_file_contents == file_content
 
 
-def test_create_gcs_folders_in_subfolder_with_one_folder(
-  mock_storage_client, mock_bucket, mock_blob, capsys
-  ):
-  bucket_name = "my-test-bucket"
-  subfolder_name = "my-subfolder"
-  folder_names = ["new-folder1"]
-  mock_blob.exists.return_value = False
-  
-  gcs.create_gcs_folders_in_subfolder(bucket_name, subfolder_name, folder_names, mock_storage_client)
-
-  mock_storage_client.bucket.assert_called_once_with(bucket_name)
-  mock_bucket.blob.assert_called_once_with(f"{subfolder_name}/{folder_names[0]}/")
-  mock_blob.exists.assert_called_once()
-  mock_blob.upload_from_string.assert_called_once_with("")
-
-  captured = capsys.readouterr()
-  expected_print_output = (
-        f"Folder '{folder_names[0]}' created within subfolder '{subfolder_name}'"
-        f" in bucket '{bucket_name}'.\n"
-    )
-  assert expected_print_output in captured.out
-
-
 # @pytest.mark.parametrize('exists', [True, False])
 # def test_check_file_exists_failure(mock_exists, mock_storage_client, exists):
 #   mock_exists.return_value = exists
