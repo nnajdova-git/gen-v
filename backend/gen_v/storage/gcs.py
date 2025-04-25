@@ -175,7 +175,12 @@ def get_path_from_gcs_url(gcs_uri: str) -> str:
   return "/".join(gcs_uri.replace("gs://", "").split("/")[1:])
 
 
-def create_gcs_folders_in_subfolder(bucket_name, subfolder_name, folder_names):
+def create_gcs_folders_in_subfolder(
+    bucket_name: str,
+    subfolder_name: str,
+    folder_names: list[str],
+    storage_client: storage.Client = None,
+) -> None:
   """Creates folders within a subfolder in a Google Cloud Storage bucket.
   Skips folder creation if the folder already exists.
   Args:
@@ -183,7 +188,7 @@ def create_gcs_folders_in_subfolder(bucket_name, subfolder_name, folder_names):
       subfolder_name: The name of the subfolder.
       folder_names: A list of folder names to create within the subfolder.
   """
-  storage_client = storage.Client()
+  storage_client = storage_client or storage.Client()
   bucket = storage_client.bucket(bucket_name)
 
   for folder_name in folder_names:
