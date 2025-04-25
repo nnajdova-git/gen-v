@@ -110,6 +110,7 @@ def test_download_file_locally(mock_storage_client):
 
   assert ret_file_contents == file_content
 
+
 def test_create_gcs_folders_in_subfolder_with_one_folder(
   mock_storage_client, mock_bucket, mock_blob, capsys
   ):
