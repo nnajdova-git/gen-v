@@ -17,6 +17,7 @@ from gen_v.storage.gcs import download_files
 from gen_v.storage.gcs import retrieve_all_files_from_gcs_folder
 from gen_v.storage.gcs import get_file_name_from_gcs_url
 from gen_v.storage.gcs import upload_file_to_gcs
+from gen_v.storage.gcs import create_gcs_folders_in_subfolder
 
 __all__ = [
     'download_file_locally',
@@ -24,4 +25,5 @@ __all__ = [
     'retrieve_all_files_from_gcs_folder',
     'get_file_name_from_gcs_url',
     'upload_file_to_gcs',
+    'create_gcs_folders_in_subfolder',
 ]
