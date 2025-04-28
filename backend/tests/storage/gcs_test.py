@@ -130,7 +130,7 @@ def test_create_gcs_folders_in_subfolder_with_one_folder(
   mock_blob.exists.assert_called_once()
   mock_blob.upload_from_string.assert_called_once_with('')
 
-  assert f'Folder created: new-folder1' in caplog.text
+  assert 'Folder created: new-folder1' in caplog.text
 
 
 # @pytest.mark.parametrize('exists', [True, False])
