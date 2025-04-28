@@ -14,9 +14,15 @@
 
 """Functions to interact with Cloud storage"""
 
+import logging
 import os
+import sys
 
 from google.cloud import storage
+
+logging.basicConfig(stream=sys.stdout)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 def get_blob(uri: str, storage_client: storage.Client = None) -> any:
@@ -197,7 +203,4 @@ def create_gcs_folders_in_subfolder(
 
     if not blob.exists():  # Check if folder already exists
       blob.upload_from_string("")  # Create folder if it doesn't exist
-      print(
-          f"Folder '{folder_name}' created within subfolder '{subfolder_name}'"
-          f" in bucket '{bucket_name}'."
-      )
+      logger.info("Folder created: %s", folder_name)
