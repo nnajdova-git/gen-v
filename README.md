@@ -24,13 +24,13 @@ Create AI-powered video ads with [Veo](
 https://deepmind.google/technologies/veo/veo-2/) on Google Cloud, enhanced with
 AI voice and audio, and personalised with brand logos, stickers and promo texts.
 
-# Gen V colab aka Feedflix
+# Gen V colab fka Feedflix
 
-Our initial use case, FeedFlix, is implemented as a user-friendly Colab notebook.
+Our initial use case, is implemented as a user-friendly Colab notebook.
 This Colab notebook demonstrates how to use Google's Generative AI models 
 (Gemini and Video Generation) to create short video ads from product images.
 
-## FeedFlix features 
+## Gen V colab features 
 
 * **Image Processing:** Resizes and recolors product images to prepare them for video generation.
 * **Prompt Generation:** Uses Gemini to analyze images and generate creative video prompts.
