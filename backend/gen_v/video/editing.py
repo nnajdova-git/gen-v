@@ -590,3 +590,89 @@ def merge_arrays(intro_outro_videos, main_content_videos):
     )
   # If intro_outro_videos is empty, return main_content_videos directly
   return main_content_videos
+
+
+def calculate_audio_duration(
+    i: int, audio_inputs: list[models.AudioInput], video_duration: float
+) -> float:
+  """Calculates the duration for each audio clip.
+
+  Args:
+    i: Index of the audio clip.
+    audio_inputs: List of AudioInput objects.
+    video_duration: Duration of the video in seconds.
+  Returns:
+    Duration of the audio clip in seconds.
+  """
+  if not audio_inputs[i].duration:
+    next_start_time = (
+        audio_inputs[i + 1].start_time
+        if i < len(audio_inputs) - 1
+        else video_duration
+    )
+    duration = next_start_time - audio_inputs[i].start_time
+  else:
+    duration = audio_inputs[i].duration
+  return duration
+
+
+def load_audio_clips(
+    audio_inputs: list[models.AudioInput], video_duration: float
+) -> list[mp.AudioFileClip]:
+  """Loads audio clips from a list of paths.
+
+  Args:
+    audio_inputs: List of paths to the audio files.
+    video_duration: Duration of the video in seconds.
+  Returns:
+    List of AudioFileClip objects.
+  """
+  audio_clips = []
+  for i, audio_input in enumerate(audio_inputs):
+    check_file_exists(audio_input.path)
+    # If no duration calculate it based on the next start or video duration
+    duration = calculate_audio_duration(i, audio_inputs, video_duration)
+    audio_clip = (
+        mp.AudioFileClip(audio_input.path)
+        .with_start(audio_input.start_time)
+        .with_duration(duration)
+    )
+    audio_clips.append(audio_clip)
+  return audio_clips
+
+
+def add_audio_clips_to_video(
+    video_path: str, audio_inputs: list[models.AudioInput], gcs_uri: str
+) -> None:
+  """Adds one or more audio clips to a video clip.
+
+  If several videos are provided without start times and duration, they will be
+  played in successive order, and the duration will be equal for each of the
+  audio clips.
+  Args:
+    video_path: Path to the video file.
+    audio_inputs: List of AudioInput objects, each representing an audio clip to
+      add.
+    gcs_uri: GCS URI of the video transition.
+  Raises:
+    ValueError: If the number of audio start times or durations does not match
+    the number of audio clips.
+  """
+  check_file_exists(video_path)
+  target_path = "/tmp/concat_audio_target.mp4"
+  if not audio_inputs:
+    raise ValueError("No audio inputs provided.")
+  video = mp.VideoFileClip(video_path)
+  audio_clips = load_audio_clips(audio_inputs, video.duration)
+  final_audio = mp.CompositeAudioClip(audio_clips)
+  final_clip = video.with_audio(final_audio).with_duration(video.duration)
+  final_clip.write_videofile(
+      target_path, codec="libx264", audio_codec="aac", logger=None
+  )
+
+  gcs.upload_file_to_gcs(target_path, gcs_uri)
+  video.close()
+  for audio in audio_clips:
+    audio.close()
+
+  final_clip.close()
