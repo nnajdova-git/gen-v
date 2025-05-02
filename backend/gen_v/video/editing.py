@@ -352,3 +352,89 @@ def slide_in(
   composed_clip = mp.CompositeVideoClip(video_fx_list)
 
   return composed_clip
+
+
+def cross_fade(
+    video_clips: list[mp.VideoFileClip],
+    padding: float,
+) -> mp.CompositeVideoClip:
+  """Applies a cross-fade transition between video clips and saves the result.
+
+  Args:
+    video_clips: A list of moviepy VideoFileClip objects to be concatenated.
+    padding: The duration of the cross-fade transition in seconds.
+  Returns:
+    mp.CompositeVideoClip: The video clip with cross-fade applied.
+  """
+  print("Concatenating video files...")
+  # video_fx_list = []
+  composed_clip = video_clips[0]
+  # opposite_side = get_opposite_side(side)
+  for video in video_clips[1:]:
+    opposite_transition = mp.video.fx.CrossFadeOut(padding).copy()
+    transition = mp.video.fx.CrossFadeIn(padding).copy()
+
+    composed_effect = opposite_transition.apply(composed_clip)
+
+    video_effect = transition.apply(
+        video.with_start(composed_clip.duration - padding)
+    )
+    composed_clip = mp.CompositeVideoClip([composed_effect, video_effect])
+
+  return composed_clip
+
+
+def get_opposite_side(side: str) -> str:
+  """Returns the opposite side of a given direction.
+
+  Args:
+    side: The input side ("left", "right", "top", or "bottom").
+
+  Returns:
+    The opposite side (e.g. "right" for "left", "left" for "right"...).
+
+  Raises:
+    ValueError: If the input side is not one of the valid options.
+  """
+  match side:
+    case "left":
+      return "right"
+    case "right":
+      return "left"
+    case "top":
+      return "bottom"
+    case "bottom":
+      return "top"
+    case _:
+      raise ValueError(f"Side {side} not supported.")
+
+
+def swipe(
+    video_clips: list[mp.VideoFileClip], padding: float, side: str
+) -> mp.CompositeVideoClip:
+  """Applies a swipe transition between video clips and saves the result.
+
+  Args:
+    video_clips: A list of moviepy VideoFileClip objects to be concatenated.
+    padding: The duration of the transition (padding) in seconds.
+    side: The direction of the swipe ('left', 'right', 'top', 'bottom').
+  Returns:
+    mp.CompositeVideoClip: The video clip with swipe applied.
+
+  """
+  print("Concatenating video files...")
+  # video_fx_list = []
+  composed_clip = video_clips[0]
+  opposite_side = get_opposite_side(side)
+  for video in video_clips[1:]:
+    opposite_transition = mp.video.fx.SlideOut(padding, opposite_side).copy()
+    transition = mp.video.fx.SlideIn(padding, side).copy()
+
+    composed_effect = opposite_transition.apply(composed_clip)
+
+    video_effect = transition.apply(
+        video.with_start(composed_clip.duration - padding)
+    )
+    composed_clip = mp.CompositeVideoClip([composed_effect, video_effect])
+
+  return composed_clip
