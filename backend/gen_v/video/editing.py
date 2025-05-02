@@ -547,3 +547,46 @@ def set_target_resolution(
     dimension = (minimum_size, minimum_size)
   # print(f'Output dimensions: {dimension}')
   return dimension
+
+
+def check_file_exists(file_path: str) -> None:
+  """Checks if a file exists at the given path.
+
+  Args:
+    file_path: The path to the file.
+  Raises:
+    FileNotFoundError: If the file does not exist.
+  """
+  if not os.path.exists(file_path):
+    raise FileNotFoundError(f"Media file not found: {file_path}")
+
+
+def merge_arrays(intro_outro_videos, main_content_videos):
+  """Merges intro/outro videos with main content videos.
+
+  This function takes two lists of videos: intro/outro videos and main
+  content videos. It inserts the first intro/outro video at the beginning,
+  appends all main content videos, and then adds the last intro/outro video
+  at the end, creating a merged video sequence. If intro_outro_videos is
+  empty, it returns main_content_videos directly.
+
+  Args:
+      intro_outro_videos: A list of intro/outro video paths.
+                          The first element is used as the intro, and the last
+                          as the outro. Can be empty. If intro_outro_videos is
+                          empty, it returns main_content_videos directly. If
+                          intro_outro_video contains only one video, it
+                          appends the same video to both begining and the end
+                          of main_content_videos.
+      main_content_videos: A list of main content video paths.
+
+  Returns:
+      A new list containing the merged video paths, or the
+      `main_content_videos` list if `intro_outro_videos` is empty.
+  """
+  if len(intro_outro_videos) > 0:
+    return (
+        [intro_outro_videos[0]] + main_content_videos + [intro_outro_videos[-1]]
+    )
+  # If intro_outro_videos is empty, return main_content_videos directly
+  return main_content_videos

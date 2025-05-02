@@ -26,6 +26,8 @@ from gen_v.video.editing import get_opposite_side
 from gen_v.video.editing import swipe
 from gen_v.video.editing import concatenate_video_clips
 from gen_v.video.editing import set_target_resolution
+from gen_v.video.editing import check_file_exists
+from gen_v.video.editing import merge_arrays
 from gen_v.video.generation import fetch_operation
 from gen_v.video.generation import generate_videos_and_download
 from gen_v.video.generation import generate_videos_concurrently
@@ -48,6 +50,8 @@ __all__ = [
     'swipe',
     'concatenate_video_clips',
     'set_target_resolution',
+    'check_file_exists',
+    'merge_arrays',
     'fetch_operation',
     'generate_videos_and_download',
     'generate_videos_concurrently',
