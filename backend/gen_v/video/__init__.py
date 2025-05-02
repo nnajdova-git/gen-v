@@ -18,6 +18,7 @@ from gen_v.video.editing import display_image
 from gen_v.video.editing import load_text_clips
 from gen_v.video.editing import overlay_image_on_video
 from gen_v.video.editing import process_videos_with_overlays_and_text
+from gen_v.video.editing import trim_clips
 from gen_v.video.generation import fetch_operation
 from gen_v.video.generation import generate_videos_and_download
 from gen_v.video.generation import generate_videos_concurrently
@@ -29,13 +30,14 @@ from gen_v.video.generation import send_request_to_google_api
 __all__ = [
     'add_text_clips_to_video',
     'display_image',
+    'load_text_clips',
+    'overlay_image_on_video',
+    'process_videos_with_overlays_and_text',
+    'trim_clips',
     'fetch_operation',
     'generate_videos_and_download',
     'generate_videos_concurrently',
     'get_gemini_generated_video_prompt',
     'image_to_video',
-    'overlay_image_on_video',
-    'process_videos_with_overlays_and_text',
-    'load_text_clips',
     'send_request_to_google_api',
 ]

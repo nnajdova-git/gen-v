@@ -240,3 +240,61 @@ def process_videos_with_overlays_and_text(
 
   with concurrent.futures.ThreadPoolExecutor() as executor:
     executor.map(process_video, videos)
+
+
+def trim_clips(
+    video_clips: list[mp.VideoFileClip],
+    padding: float,
+    output_length: int,
+    trim_location: str,
+    trim_enabled: bool = True,
+) -> list[mp.VideoFileClip]:
+  """Trims video clips to fit the desired output length.
+
+  Args:
+    video_clips: A list of moviepy VideoFileClip video clips.
+    padding: The duration of the padding (for transitions) in seconds.
+    output_length: The desired length of the output video in seconds.
+    trim_location: Where to trim the videos ("start" or "end").
+    trim_enabled: Boolean reflecting if trim is enabled.
+
+  Returns:
+    A list of trimmed moviepy VideoFileClip objects.
+
+  Raises:
+    ValueError: If the trim_location is invalid or if output_length is <= 0.
+  """
+  total_length = 0
+  for video in video_clips:
+    total_length += video.duration
+  total_length -= padding * (len(video_clips) - 1)
+
+  total_trim_length = total_length - output_length
+  print(f"Total length: {total_length} Output length: {output_length}")
+  if total_trim_length < 0 or not trim_enabled:
+    print("Trimming not required.")
+    return video_clips
+
+  number_of_intros_outros_clips = 2
+  number_of_veo_clips = len(video_clips) - number_of_intros_outros_clips
+  trim_length = total_trim_length / number_of_veo_clips
+  for index, video in enumerate(video_clips[1:-1]):
+    if trim_location == "start":
+      start_time = -(video.duration - trim_length)
+      end_time = None
+    elif trim_location == "end":
+      start_time = 0
+      end_time = video.duration - trim_length
+    else:
+      raise ValueError(f"Trim location {trim_location} not supported.")
+
+    trimmed_clip = video.subclipped(start_time, end_time)
+    video_clips[index + 1] = trimmed_clip
+
+  total_length = 0
+  for video in video_clips:
+    total_length += video.duration
+  total_length += padding * (len(video_clips) - 1)
+
+  print(f"Total length: {total_length} Output length: {output_length}")
+  return video_clips
