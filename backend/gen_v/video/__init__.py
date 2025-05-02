@@ -24,6 +24,8 @@ from gen_v.video.editing import slide_in
 from gen_v.video.editing import cross_fade
 from gen_v.video.editing import get_opposite_side
 from gen_v.video.editing import swipe
+from gen_v.video.editing import concatenate_video_clips
+from gen_v.video.editing import set_target_resolution
 from gen_v.video.generation import fetch_operation
 from gen_v.video.generation import generate_videos_and_download
 from gen_v.video.generation import generate_videos_concurrently
@@ -44,6 +46,8 @@ __all__ = [
     'cross_fade',
     'get_opposite_side',
     'swipe',
+    'concatenate_video_clips',
+    'set_target_resolution',
     'fetch_operation',
     'generate_videos_and_download',
     'generate_videos_concurrently',

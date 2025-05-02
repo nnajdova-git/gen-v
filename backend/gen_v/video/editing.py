@@ -17,6 +17,7 @@ This module provides utilities for manipulating video clips after generation.
 """
 from typing import Any, Callable
 import mediapy
+import os
 from PIL import Image
 from gen_v import models
 from gen_v import storage as gcs
@@ -438,3 +439,111 @@ def swipe(
     composed_clip = mp.CompositeVideoClip([composed_effect, video_effect])
 
   return composed_clip
+
+
+def concatenate_video_clips(
+    videos: list[str],
+    transition: models.VideoTransition,
+    output_length: int,
+    trim_location: str,
+    resized_image_width: int,
+    resized_image_height: int,
+    tmp_string: str = "/content",
+) -> str:
+  """Concatenates video clips with transitions and optional trimming.
+
+  Args:
+      videos: A list of paths to the video clips to concatenate.
+      transition: A VideoTransition object with transition type and duration.
+      output_length: The desired length of the output video in seconds.
+      trim_location: Where to trim the videos ("start" or "end").
+      resized_image_width: target image width.
+      resized_image_height: target image height.
+      tmp_string: path to the folder where clips are.
+
+  Returns:
+      The path to the concatenated video file, or None if an error occurred.
+  """
+
+  try:
+    print(f"""Start concatenation of video files {videos}
+                 with transition {transition}...""")
+    if not videos:
+      raise ValueError("No video inputs provided.")
+
+    target_path = f"{tmp_string}/concat_target.mp4"
+    video_clips = []
+    target_resolution = set_target_resolution(
+        videos[0], resized_image_width, resized_image_height
+    )
+    for vid in videos:
+      video_clips.append(
+          mp.VideoFileClip(vid, target_resolution=target_resolution)
+      )
+
+    video_clips = trim_clips(
+        video_clips, transition.padding, output_length, trim_location
+    )
+    composed_clip = None
+    match transition.name:
+      case "CROSS_FADE":
+        composed_clip = cross_fade(video_clips, transition.padding)
+      case "FADE_IN":
+        composed_clip = fade_in(video_clips, transition.padding)
+      case "SWIPE":
+        composed_clip = swipe(video_clips, transition.padding, transition.side)
+      case "SLIDE_IN":
+        composed_clip = slide_in(
+            video_clips, transition.padding, transition.side
+        )
+      case _:
+        raise ValueError(f"Transition {transition.name} not supported.")
+
+    composed_clip.write_videofile(target_path, codec="libx264", logger=None)
+    composed_clip.close()
+
+  finally:
+    # Clean up temporary files
+    try:
+      for video in videos:
+        print(f"Removing temporary file {video}...")
+        os.remove(video)
+    except FileNotFoundError:
+      pass
+
+  print(f"Concatenation finished, video available: {target_path}")
+  return target_path
+
+
+def set_target_resolution(
+    video: str, resized_image_width: int, resized_image_height: int
+) -> tuple[int, int]:
+  """Sets the target resolution for a video based on its orientation.
+
+  Args:
+    video: The path to the video file.
+    resized_image_width: target image widht.
+    resized_image_height: target image height.
+
+  Returns:
+    A tuple containing the target width and height (in pixels).
+
+  """
+  print("Retrieve the dimensions...")
+  clip = mp.VideoFileClip(video)
+  clip_dimension = clip.size
+  if clip_dimension[0] < clip_dimension[1]:
+    if resized_image_width > resized_image_height:
+      dimension = (resized_image_height, resized_image_width)
+    else:
+      dimension = (resized_image_width, resized_image_height)
+  elif clip_dimension[0] > clip_dimension[1]:
+    if resized_image_width > resized_image_height:
+      dimension = (resized_image_width, resized_image_height)
+    else:
+      dimension = (resized_image_height, resized_image_width)
+  else:
+    minimum_size = min(resized_image_height, resized_image_width)
+    dimension = (minimum_size, minimum_size)
+  # print(f'Output dimensions: {dimension}')
+  return dimension
