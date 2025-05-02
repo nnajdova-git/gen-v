@@ -19,6 +19,7 @@ from gen_v.video.editing import load_text_clips
 from gen_v.video.editing import overlay_image_on_video
 from gen_v.video.editing import process_videos_with_overlays_and_text
 from gen_v.video.editing import trim_clips
+from gen_v.video.editing import fade_in
 from gen_v.video.generation import fetch_operation
 from gen_v.video.generation import generate_videos_and_download
 from gen_v.video.generation import generate_videos_concurrently
@@ -34,6 +35,7 @@ __all__ = [
     'overlay_image_on_video',
     'process_videos_with_overlays_and_text',
     'trim_clips',
+    'fade_in',
     'fetch_operation',
     'generate_videos_and_download',
     'generate_videos_concurrently',

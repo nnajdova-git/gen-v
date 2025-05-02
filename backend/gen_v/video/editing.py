@@ -298,3 +298,30 @@ def trim_clips(
 
   print(f"Total length: {total_length} Output length: {output_length}")
   return video_clips
+
+
+def fade_in(
+    video_clips: list[mp.VideoFileClip], padding: float
+) -> mp.CompositeVideoClip:
+  """Applies a fade-in transition between video clips and saves the result.
+
+  Args:
+    video_clips: A list of moviepy VideoFileClip objects to be concatenated.
+    padding: The duration of the fade-in transition in seconds.
+  Returns:
+    mp.CompositeVideoClip: A single moviepy CompositeVideoClip object
+                           representing all input clips concatenated with
+                           fade-in transitions applied between them.
+  """
+
+  print("Concatenating video files...")
+  video_fx_list = [video_clips[0]]
+  idx = video_clips[0].duration - padding
+  for video in video_clips[1:]:
+    transition = mp.video.fx.CrossFadeIn(padding).copy()
+    video_fx_list.append(transition.apply(video.with_start(idx)))
+    idx += video.duration - padding
+
+  composed_clip = mp.CompositeVideoClip(video_fx_list)
+
+  return composed_clip
