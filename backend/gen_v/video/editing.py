@@ -325,3 +325,30 @@ def fade_in(
   composed_clip = mp.CompositeVideoClip(video_fx_list)
 
   return composed_clip
+
+
+def slide_in(
+    video_clips: list[mp.VideoFileClip], padding: float, side: str
+) -> mp.CompositeVideoClip:
+  """Applies a slide-in transition to a video clip.
+
+  Args:
+    video_clips: The input list of video clips.
+    padding: The duration of the transition in seconds.
+    side: The direction from which the clip slides in
+     ("left", "right", "top", or "bottom"). Defaults to "left".
+
+  Returns:
+    mp.CompositeVideoClip: The video clip with the slide-in transition applied.
+  """
+  print("Concatenating video files...")
+  video_fx_list = [video_clips[0]]
+  idx = video_clips[0].duration - padding
+  for video in video_clips[1:]:
+    transition = mp.video.fx.SlideIn(padding, side).copy()
+    video_fx_list.append(transition.apply(video.with_start(idx)))
+    idx += video.duration - padding
+
+  composed_clip = mp.CompositeVideoClip(video_fx_list)
+
+  return composed_clip
