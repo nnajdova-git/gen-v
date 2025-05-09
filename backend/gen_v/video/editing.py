@@ -17,6 +17,7 @@ This module provides utilities for manipulating video clips after generation.
 """
 from typing import Any, Callable
 import mediapy
+import os
 from PIL import Image
 from gen_v import models
 from gen_v import storage as gcs
@@ -240,3 +241,438 @@ def process_videos_with_overlays_and_text(
 
   with concurrent.futures.ThreadPoolExecutor() as executor:
     executor.map(process_video, videos)
+
+
+def trim_clips(
+    video_clips: list[mp.VideoFileClip],
+    padding: float,
+    output_length: int,
+    trim_location: str,
+    trim_enabled: bool = True,
+) -> list[mp.VideoFileClip]:
+  """Trims video clips to fit the desired output length.
+
+  Args:
+    video_clips: A list of moviepy VideoFileClip video clips.
+    padding: The duration of the padding (for transitions) in seconds.
+    output_length: The desired length of the output video in seconds.
+    trim_location: Where to trim the videos ("start" or "end").
+    trim_enabled: Boolean reflecting if trim is enabled.
+
+  Returns:
+    A list of trimmed moviepy VideoFileClip objects.
+
+  Raises:
+    ValueError: If the trim_location is invalid or if output_length is <= 0.
+  """
+  total_length = 0
+  for video in video_clips:
+    total_length += video.duration
+  total_length -= padding * (len(video_clips) - 1)
+
+  total_trim_length = total_length - output_length
+  print(f"Total length: {total_length} Output length: {output_length}")
+  if total_trim_length < 0 or not trim_enabled:
+    print("Trimming not required.")
+    return video_clips
+
+  number_of_intros_outros_clips = 2
+  number_of_veo_clips = len(video_clips) - number_of_intros_outros_clips
+  trim_length = total_trim_length / number_of_veo_clips
+  for index, video in enumerate(video_clips[1:-1]):
+    if trim_location == "start":
+      start_time = -(video.duration - trim_length)
+      end_time = None
+    elif trim_location == "end":
+      start_time = 0
+      end_time = video.duration - trim_length
+    else:
+      raise ValueError(f"Trim location {trim_location} not supported.")
+
+    trimmed_clip = video.subclipped(start_time, end_time)
+    video_clips[index + 1] = trimmed_clip
+
+  total_length = 0
+  for video in video_clips:
+    total_length += video.duration
+  total_length += padding * (len(video_clips) - 1)
+
+  print(f"Total length: {total_length} Output length: {output_length}")
+  return video_clips
+
+
+def fade_in(
+    video_clips: list[mp.VideoFileClip], padding: float
+) -> mp.CompositeVideoClip:
+  """Applies a fade-in transition between video clips and saves the result.
+
+  Args:
+    video_clips: A list of moviepy VideoFileClip objects to be concatenated.
+    padding: The duration of the fade-in transition in seconds.
+  Returns:
+    mp.CompositeVideoClip: A single moviepy CompositeVideoClip object
+                           representing all input clips concatenated with
+                           fade-in transitions applied between them.
+  """
+
+  print("Concatenating video files...")
+  video_fx_list = [video_clips[0]]
+  idx = video_clips[0].duration - padding
+  for video in video_clips[1:]:
+    transition = mp.video.fx.CrossFadeIn(padding).copy()
+    video_fx_list.append(transition.apply(video.with_start(idx)))
+    idx += video.duration - padding
+
+  composed_clip = mp.CompositeVideoClip(video_fx_list)
+
+  return composed_clip
+
+
+def slide_in(
+    video_clips: list[mp.VideoFileClip], padding: float, side: str
+) -> mp.CompositeVideoClip:
+  """Applies a slide-in transition to a video clip.
+
+  Args:
+    video_clips: The input list of video clips.
+    padding: The duration of the transition in seconds.
+    side: The direction from which the clip slides in
+     ("left", "right", "top", or "bottom"). Defaults to "left".
+
+  Returns:
+    mp.CompositeVideoClip: The video clip with the slide-in transition applied.
+  """
+  print("Concatenating video files...")
+  video_fx_list = [video_clips[0]]
+  idx = video_clips[0].duration - padding
+  for video in video_clips[1:]:
+    transition = mp.video.fx.SlideIn(padding, side).copy()
+    video_fx_list.append(transition.apply(video.with_start(idx)))
+    idx += video.duration - padding
+
+  composed_clip = mp.CompositeVideoClip(video_fx_list)
+
+  return composed_clip
+
+
+def cross_fade(
+    video_clips: list[mp.VideoFileClip],
+    padding: float,
+) -> mp.CompositeVideoClip:
+  """Applies a cross-fade transition between video clips and saves the result.
+
+  Args:
+    video_clips: A list of moviepy VideoFileClip objects to be concatenated.
+    padding: The duration of the cross-fade transition in seconds.
+  Returns:
+    mp.CompositeVideoClip: The video clip with cross-fade applied.
+  """
+  print("Concatenating video files...")
+  # video_fx_list = []
+  composed_clip = video_clips[0]
+  # opposite_side = get_opposite_side(side)
+  for video in video_clips[1:]:
+    opposite_transition = mp.video.fx.CrossFadeOut(padding).copy()
+    transition = mp.video.fx.CrossFadeIn(padding).copy()
+
+    composed_effect = opposite_transition.apply(composed_clip)
+
+    video_effect = transition.apply(
+        video.with_start(composed_clip.duration - padding)
+    )
+    composed_clip = mp.CompositeVideoClip([composed_effect, video_effect])
+
+  return composed_clip
+
+
+def get_opposite_side(side: str) -> str:
+  """Returns the opposite side of a given direction.
+
+  Args:
+    side: The input side ("left", "right", "top", or "bottom").
+
+  Returns:
+    The opposite side (e.g. "right" for "left", "left" for "right"...).
+
+  Raises:
+    ValueError: If the input side is not one of the valid options.
+  """
+  match side:
+    case "left":
+      return "right"
+    case "right":
+      return "left"
+    case "top":
+      return "bottom"
+    case "bottom":
+      return "top"
+    case _:
+      raise ValueError(f"Side {side} not supported.")
+
+
+def swipe(
+    video_clips: list[mp.VideoFileClip], padding: float, side: str
+) -> mp.CompositeVideoClip:
+  """Applies a swipe transition between video clips and saves the result.
+
+  Args:
+    video_clips: A list of moviepy VideoFileClip objects to be concatenated.
+    padding: The duration of the transition (padding) in seconds.
+    side: The direction of the swipe ('left', 'right', 'top', 'bottom').
+  Returns:
+    mp.CompositeVideoClip: The video clip with swipe applied.
+
+  """
+  print("Concatenating video files...")
+  # video_fx_list = []
+  composed_clip = video_clips[0]
+  opposite_side = get_opposite_side(side)
+  for video in video_clips[1:]:
+    opposite_transition = mp.video.fx.SlideOut(padding, opposite_side).copy()
+    transition = mp.video.fx.SlideIn(padding, side).copy()
+
+    composed_effect = opposite_transition.apply(composed_clip)
+
+    video_effect = transition.apply(
+        video.with_start(composed_clip.duration - padding)
+    )
+    composed_clip = mp.CompositeVideoClip([composed_effect, video_effect])
+
+  return composed_clip
+
+
+def concatenate_video_clips(
+    videos: list[str],
+    transition: models.VideoTransition,
+    output_length: int,
+    trim_location: str,
+    resized_image_width: int,
+    resized_image_height: int,
+    tmp_string: str = "/content",
+) -> str:
+  """Concatenates video clips with transitions and optional trimming.
+
+  Args:
+      videos: A list of paths to the video clips to concatenate.
+      transition: A VideoTransition object with transition type and duration.
+      output_length: The desired length of the output video in seconds.
+      trim_location: Where to trim the videos ("start" or "end").
+      resized_image_width: target image width.
+      resized_image_height: target image height.
+      tmp_string: path to the folder where clips are.
+
+  Returns:
+      The path to the concatenated video file, or None if an error occurred.
+  """
+
+  try:
+    print(f"""Start concatenation of video files {videos}
+                 with transition {transition}...""")
+    if not videos:
+      raise ValueError("No video inputs provided.")
+
+    target_path = f"{tmp_string}/concat_target.mp4"
+    video_clips = []
+    target_resolution = set_target_resolution(
+        videos[0], resized_image_width, resized_image_height
+    )
+    for vid in videos:
+      video_clips.append(
+          mp.VideoFileClip(vid, target_resolution=target_resolution)
+      )
+
+    video_clips = trim_clips(
+        video_clips, transition.padding, output_length, trim_location
+    )
+    composed_clip = None
+    match transition.name:
+      case "CROSS_FADE":
+        composed_clip = cross_fade(video_clips, transition.padding)
+      case "FADE_IN":
+        composed_clip = fade_in(video_clips, transition.padding)
+      case "SWIPE":
+        composed_clip = swipe(video_clips, transition.padding, transition.side)
+      case "SLIDE_IN":
+        composed_clip = slide_in(
+            video_clips, transition.padding, transition.side
+        )
+      case _:
+        raise ValueError(f"Transition {transition.name} not supported.")
+
+    composed_clip.write_videofile(target_path, codec="libx264", logger=None)
+    composed_clip.close()
+
+  finally:
+    # Clean up temporary files
+    try:
+      for video in videos:
+        print(f"Removing temporary file {video}...")
+        os.remove(video)
+    except FileNotFoundError:
+      pass
+
+  print(f"Concatenation finished, video available: {target_path}")
+  return target_path
+
+
+def set_target_resolution(
+    video: str, resized_image_width: int, resized_image_height: int
+) -> tuple[int, int]:
+  """Sets the target resolution for a video based on its orientation.
+
+  Args:
+    video: The path to the video file.
+    resized_image_width: target image widht.
+    resized_image_height: target image height.
+
+  Returns:
+    A tuple containing the target width and height (in pixels).
+
+  """
+  print("Retrieve the dimensions...")
+  clip = mp.VideoFileClip(video)
+  clip_dimension = clip.size
+  if clip_dimension[0] < clip_dimension[1]:
+    if resized_image_width > resized_image_height:
+      dimension = (resized_image_height, resized_image_width)
+    else:
+      dimension = (resized_image_width, resized_image_height)
+  elif clip_dimension[0] > clip_dimension[1]:
+    if resized_image_width > resized_image_height:
+      dimension = (resized_image_width, resized_image_height)
+    else:
+      dimension = (resized_image_height, resized_image_width)
+  else:
+    minimum_size = min(resized_image_height, resized_image_width)
+    dimension = (minimum_size, minimum_size)
+  # print(f'Output dimensions: {dimension}')
+  return dimension
+
+
+def check_file_exists(file_path: str) -> None:
+  """Checks if a file exists at the given path.
+
+  Args:
+    file_path: The path to the file.
+  Raises:
+    FileNotFoundError: If the file does not exist.
+  """
+  if not os.path.exists(file_path):
+    raise FileNotFoundError(f"Media file not found: {file_path}")
+
+
+def merge_arrays(intro_outro_videos, main_content_videos):
+  """Merges intro/outro videos with main content videos.
+
+  This function takes two lists of videos: intro/outro videos and main
+  content videos. It inserts the first intro/outro video at the beginning,
+  appends all main content videos, and then adds the last intro/outro video
+  at the end, creating a merged video sequence. If intro_outro_videos is
+  empty, it returns main_content_videos directly.
+
+  Args:
+      intro_outro_videos: A list of intro/outro video paths.
+                          The first element is used as the intro, and the last
+                          as the outro. Can be empty. If intro_outro_videos is
+                          empty, it returns main_content_videos directly. If
+                          intro_outro_video contains only one video, it
+                          appends the same video to both begining and the end
+                          of main_content_videos.
+      main_content_videos: A list of main content video paths.
+
+  Returns:
+      A new list containing the merged video paths, or the
+      `main_content_videos` list if `intro_outro_videos` is empty.
+  """
+  if len(intro_outro_videos) > 0:
+    return (
+        [intro_outro_videos[0]] + main_content_videos + [intro_outro_videos[-1]]
+    )
+  # If intro_outro_videos is empty, return main_content_videos directly
+  return main_content_videos
+
+
+def calculate_audio_duration(
+    i: int, audio_inputs: list[models.AudioInput], video_duration: float
+) -> float:
+  """Calculates the duration for each audio clip.
+
+  Args:
+    i: Index of the audio clip.
+    audio_inputs: List of AudioInput objects.
+    video_duration: Duration of the video in seconds.
+  Returns:
+    Duration of the audio clip in seconds.
+  """
+  if not audio_inputs[i].duration:
+    next_start_time = (
+        audio_inputs[i + 1].start_time
+        if i < len(audio_inputs) - 1
+        else video_duration
+    )
+    duration = next_start_time - audio_inputs[i].start_time
+  else:
+    duration = audio_inputs[i].duration
+  return duration
+
+
+def load_audio_clips(
+    audio_inputs: list[models.AudioInput], video_duration: float
+) -> list[mp.AudioFileClip]:
+  """Loads audio clips from a list of paths.
+
+  Args:
+    audio_inputs: List of paths to the audio files.
+    video_duration: Duration of the video in seconds.
+  Returns:
+    List of AudioFileClip objects.
+  """
+  audio_clips = []
+  for i, audio_input in enumerate(audio_inputs):
+    check_file_exists(audio_input.path)
+    # If no duration calculate it based on the next start or video duration
+    duration = calculate_audio_duration(i, audio_inputs, video_duration)
+    audio_clip = (
+        mp.AudioFileClip(audio_input.path)
+        .with_start(audio_input.start_time)
+        .with_duration(duration)
+    )
+    audio_clips.append(audio_clip)
+  return audio_clips
+
+
+def add_audio_clips_to_video(
+    video_path: str, audio_inputs: list[models.AudioInput], gcs_uri: str
+) -> None:
+  """Adds one or more audio clips to a video clip.
+
+  If several videos are provided without start times and duration, they will be
+  played in successive order, and the duration will be equal for each of the
+  audio clips.
+  Args:
+    video_path: Path to the video file.
+    audio_inputs: List of AudioInput objects, each representing an audio clip to
+      add.
+    gcs_uri: GCS URI of the video transition.
+  Raises:
+    ValueError: If the number of audio start times or durations does not match
+    the number of audio clips.
+  """
+  check_file_exists(video_path)
+  target_path = "/tmp/concat_audio_target.mp4"
+  if not audio_inputs:
+    raise ValueError("No audio inputs provided.")
+  video = mp.VideoFileClip(video_path)
+  audio_clips = load_audio_clips(audio_inputs, video.duration)
+  final_audio = mp.CompositeAudioClip(audio_clips)
+  final_clip = video.with_audio(final_audio).with_duration(video.duration)
+  final_clip.write_videofile(
+      target_path, codec="libx264", audio_codec="aac", logger=None
+  )
+
+  gcs.upload_file_to_gcs(target_path, gcs_uri)
+  video.close()
+  for audio in audio_clips:
+    audio.close()
+
+  final_clip.close()
