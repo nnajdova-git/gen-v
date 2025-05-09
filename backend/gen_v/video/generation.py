@@ -234,8 +234,10 @@ def generate_videos_and_download(
 
     storage.download_file_locally(video['gcsUri'], output_video_local_path)
 
+    video_uri = storage.move_blob(video['gcsUri'], file_name)
+
     output_video_files.append({
-        'gcs_uri': video['gcsUri'],
+        'gcs_uri': video_uri,
         'local_file': output_video_local_path,
         'local_file_name': output_video_local_path.rsplit('/', maxsplit=1)[-1],
         'product_title': product['title'],
