@@ -211,7 +211,7 @@ def move_blob(
     destination_folder_name: str,
     storage_client: storage.Client = None,
 ) -> None:
-  """Moves folders (and their contents) within the same Google Cloud Storage bucket.
+  """Moves folders (and their contents) within the same GCS bucket.
   Args:
       bucket_name: The name of the bucket.
       source_blob_name: The source blob.
@@ -224,7 +224,8 @@ def move_blob(
   source_blob = bucket.blob(get_path_from_gcs_url(source_blob_gcsuri))
 
   root = "/".join(source_blob_gcsuri.replace("gs://", "").split("/")[1:-2])
-  destination = f"{root}/{destination_folder_name}/{get_file_name_from_gcs_url(source_blob_gcsuri)}"
+  file = get_file_name_from_gcs_url(source_blob_gcsuri)
+  destination = f"{root}/{destination_folder_name}/{file}"
   new_blob = bucket.copy_blob(source_blob, bucket, destination)
   source_blob.delete()
 

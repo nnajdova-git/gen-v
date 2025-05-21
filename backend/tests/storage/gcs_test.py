@@ -61,7 +61,11 @@ def fixture_mock_bucket(mock_blob):
   mock_bucket = mock.MagicMock(spec=storage.Bucket)
   mock_bucket.blob.return_value = mock_blob
 
-  def copy_blob(source_blob: storage.Blob, bucket: storage.Bucket, destination: str):  # pylint: disable=unused-argument
+  def copy_blob(
+      source_blob: storage.Blob,  # pylint: disable=unused-argument
+      bucket: storage.Bucket,  # pylint: disable=unused-argument
+      destination: str,
+  ):
     mock_blob.self_link = '/' + destination
     return mock_blob
 
@@ -139,7 +143,7 @@ def test_create_gcs_folders_in_subfolder_with_one_folder(
   assert 'Folder created: new-folder1' in caplog.text
 
 
-def test_move_blob(mock_storage_client, mock_bucket, mock_blob):
+def test_move_blob(mock_storage_client):
 
   source_guri = (
       'gs://bucket_name/existing_folder/existing_subfolder/filename.mp4'
