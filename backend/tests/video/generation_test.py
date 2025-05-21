@@ -14,6 +14,7 @@
 """Unit tests for video generation."""
 from unittest import mock
 from google import genai
+from google.cloud import storage
 from google.genai import types
 import pytest
 import requests
@@ -66,6 +67,57 @@ def mock_generated_video_list_fixture() -> list[dict]:
       'local_file_name': 'item1-prefix-vid1.mp4',
       'product_title': 'Test Item 1',
   }]
+
+
+@pytest.fixture(name='fake_fs')
+def fake_filesystem(fs):
+  yield fs
+
+
+@pytest.fixture(name='mock_blob')
+def fixture_mock_blob(fs):
+  mock_blob = mock.MagicMock(spec=storage.Blob)
+  mock_blob.file = 'original_video.mp4'
+  mock_blob.contents = 'The original contents'
+
+  def upload_from_filename(filename: str, client: storage.Client):  # pylint: disable=unused-argument
+    mock_blob.file = filename
+    with open(filename, 'r', encoding='UTF-8') as f:
+      mock_blob.contents = f.read()
+
+  mock_blob.upload_from_filename = upload_from_filename
+
+  def download_to_filename(filename: str):
+    fs.create_file(filename)
+    with open(filename, 'w', encoding='UTF-8') as f:
+      f.write(mock_blob.contents)
+
+  mock_blob.download_to_filename = download_to_filename
+
+  mock_blob.generate_signed_url.return_value = (
+      'https://signed_url/test_file.mp4'
+  )
+  mock_blob.open.return_value.__enter__.return_value.read.return_value = (
+      b'This is a test file content.'
+  )
+  mock_blob.self_link = 'gs://test-bucket/outputs/gen_video_abc.mp4'
+  yield mock_blob
+
+
+@pytest.fixture(name='mock_bucket')
+def fixture_mock_bucket(mock_blob):
+  mock_bucket = mock.MagicMock(spec=storage.Bucket)
+  mock_bucket.blob.return_value = mock_blob
+  mock_bucket.copy_blob.return_value = mock_blob
+
+  yield mock_bucket
+
+
+@pytest.fixture(name='mock_storage_client')
+def fixture_storage_client(mock_bucket):
+  mock_storage_client = mock.MagicMock(spec=storage.Client)
+  mock_storage_client.bucket.return_value = mock_bucket
+  yield mock_storage_client
 
 
 def test_send_request_to_google_api(mock_requests_post):
@@ -197,6 +249,7 @@ def test_generate_videos_and_download_success_simple(
     mock_img_to_vid,
     mock_get_filename,
     mock_download,
+    mock_storage_client,
     veo_api_request_data,
     mock_app_settings,
     product_data,
@@ -226,6 +279,7 @@ def test_generate_videos_and_download_success_simple(
       settings=mock_app_settings,
       output_file_prefix=output_prefix,
       product=product_data,
+      storage_client=mock_storage_client,
   )
 
   mock_img_to_vid.assert_called_once_with(
