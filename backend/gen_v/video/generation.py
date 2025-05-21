@@ -27,6 +27,7 @@ import time
 from google import genai
 import google.auth
 from google.auth.transport import requests as google_requests
+from google.cloud import storage as gcp_storage
 from google.genai import types
 import requests
 
@@ -204,6 +205,7 @@ def generate_videos_and_download(
     settings: config.AppSettings,
     output_file_prefix: str,
     product: dict[str, any],
+    storage_client: gcp_storage.Client = None,
 ) -> list[dict[str, any]]:
   """Generates videos, downloads them, and returns their information.
 
@@ -234,7 +236,9 @@ def generate_videos_and_download(
 
     storage.download_file_locally(video['gcsUri'], output_video_local_path)
 
-    video_uri = storage.move_blob(video['gcsUri'], file_name)
+    video_uri = storage.move_blob(
+        video['gcsUri'], file_name, storage_client=storage_client
+    )
 
     output_video_files.append({
         'gcs_uri': video_uri,

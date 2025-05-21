@@ -205,6 +205,7 @@ def create_gcs_folders_in_subfolder(
       blob.upload_from_string("")  # Create folder if it doesn't exist
       logger.info("Folder created: %s", folder_name)
 
+
 def move_blob(
     source_blob_gcsuri: str,
     destination_folder_name: str,
@@ -217,7 +218,9 @@ def move_blob(
       destination_folder_name: The destination folder for the blob.
   """
   storage_client = storage_client or storage.Client()
-  bucket =storage_client.bucket(get_bucket_name_from_gcs_url(source_blob_gcsuri))
+  bucket = storage_client.bucket(
+      get_bucket_name_from_gcs_url(source_blob_gcsuri)
+  )
   source_blob = bucket.blob(get_path_from_gcs_url(source_blob_gcsuri))
 
   root = "/".join(source_blob_gcsuri.replace("gs://", "").split("/")[1:-2])
