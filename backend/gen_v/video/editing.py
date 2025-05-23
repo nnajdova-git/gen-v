@@ -218,7 +218,7 @@ def process_videos_with_overlays_and_text(
       local_video_file_path = gcs.download_file_locally(
           video["gcs_uri"], video["local_file_name"]
       )
-      print(f"Downloaded video '{video["local_file_name"]}' to: {local_video_file_path}")
+      print(f"Downloaded video {video['local_file_name']} to: {local_video_file_path}")
       local_video_file = models.VideoInput(path=local_video_file_path)
 
       gcs_file_name = video["local_file_name"]
