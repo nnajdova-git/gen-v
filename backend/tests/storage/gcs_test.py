@@ -52,6 +52,7 @@ def fixture_mock_blob(fs):
   mock_blob.open.return_value.__enter__.return_value.read.return_value = (
       b'This is a test file content.'
   )
+  mock_blob.self_link = ''
   yield mock_blob
 
 
@@ -60,6 +61,15 @@ def fixture_mock_bucket(mock_blob):
   mock_bucket = mock.MagicMock(spec=storage.Bucket)
   mock_bucket.blob.return_value = mock_blob
 
+  def copy_blob(
+      source_blob: storage.Blob,  # pylint: disable=unused-argument
+      bucket: storage.Bucket,  # pylint: disable=unused-argument
+      destination: str,
+  ):
+    mock_blob.self_link = '/' + destination
+    return mock_blob
+
+  mock_bucket.copy_blob = copy_blob
   yield mock_bucket
 
 
@@ -133,19 +143,17 @@ def test_create_gcs_folders_in_subfolder_with_one_folder(
   assert 'Folder created: new-folder1' in caplog.text
 
 
-# @pytest.mark.parametrize('exists', [True, False])
-# def test_check_file_exists_failure(mock_exists, mock_storage_client, exists):
-#   mock_exists.return_value = exists
-#   if not exists:
-#     with pytest.raises(FileNotFoundError) as excinfo:
-#       gcs.check_file_exists(
-#           'nonexistent_file.mp4', 'test_bucket', mock_storage_client
-#       )
-#     assert (
-#         str(excinfo.value)
-#         == 'File not found: nonexistent_file.mp4 at bucket test_bucket'
-#     )
-#   else:
-#     assert gcs.check_file_exists(
-#         'existing_file.mp4', 'test_bucket', mock_storage_client
-#     )
+def test_move_blob(mock_storage_client):
+
+  source_guri = (
+      'gs://bucket_name/existing_folder/existing_subfolder/filename.mp4'
+  )
+  dest_folder = 'destination_folder'
+
+  expected_destination = '/existing_folder/destination_folder/filename.mp4'
+
+  new_link = gcs.move_blob(
+      source_guri, dest_folder, storage_client=mock_storage_client
+  )
+
+  assert new_link == expected_destination
