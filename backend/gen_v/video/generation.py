@@ -224,11 +224,18 @@ def generate_videos_and_download(
   file_name = storage.get_file_name_from_gcs_url(veo_request.image_uri)
 
   output_video_files = []
-  logger.info(
-      'Generated videos %s for %s',
-      len(output_videos['response']['videos']),
-      file_name,
-  )
+  if(output_videos['response']):
+    logger.info(
+        'Generated videos %s for %s',
+        len(output_videos['response']['videos']),
+        file_name,
+    )
+  else:
+    logger.info(
+        'No response or videos found for %s in %s',
+        file_name,
+        output_videos
+    )
 
   for video in output_videos['response']['videos']:
     veo_name = storage.get_file_name_from_gcs_url(video['gcsUri'])
