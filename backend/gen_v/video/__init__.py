@@ -37,6 +37,7 @@ from gen_v.video.generation import generate_videos_concurrently
 from gen_v.video.generation import get_gemini_generated_video_prompt
 from gen_v.video.generation import image_to_video
 from gen_v.video.generation import send_request_to_google_api
+from gen_v.video.generation import generate_videos
 
 
 __all__ = [
@@ -64,4 +65,5 @@ __all__ = [
     'get_gemini_generated_video_prompt',
     'image_to_video',
     'send_request_to_google_api',
+    'generate_videos'
 ]

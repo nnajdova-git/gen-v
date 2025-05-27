@@ -215,14 +215,14 @@ def process_videos_with_overlays_and_text(
 
     try:
       print(
-          f"Downloading video {video['local_file_name']} from:"
-          f" {video['gcs_uri']}"
+          f"Downloading video {video["local_file_name"]} from:"
+          f" {video["gcs_uri"]}"
       )
       local_video_file_path = gcs.download_file_locally(
           video["gcs_uri"], video["local_file_name"]
       )
       print(
-          f"Downloaded video {video['local_file_name']} to:"
+          f"Downloaded video {video["local_file_name"]} to:"
           f" {local_video_file_path}"
       )
       local_video_file = models.VideoInput(path=local_video_file_path)
@@ -257,7 +257,7 @@ def process_videos_with_overlays_and_text(
 
       add_text_clips_to_video(image_overlay_video, [promo_text], final_video)
     except Exception as e:
-      print(f"Error processing video: {video['local_file_name']}: {e}")
+      print(f"Error processing video: {video["local_file_name"]}: {e}")
 
   with concurrent.futures.ThreadPoolExecutor() as executor:
     executor.map(process_video, videos)
