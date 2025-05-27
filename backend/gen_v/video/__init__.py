@@ -65,5 +65,5 @@ __all__ = [
     'get_gemini_generated_video_prompt',
     'image_to_video',
     'send_request_to_google_api',
-    'generate_videos'
+    'generate_videos',
 ]
