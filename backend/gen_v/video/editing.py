@@ -214,11 +214,17 @@ def process_videos_with_overlays_and_text(
     print(f"Processing video: {video}")
 
     try:
-      print(f"Downloading video {video['local_file_name']} from: {video['gcs_uri']}")
+      print(
+          f"Downloading video {video['local_file_name']} from:"
+          f" {video['gcs_uri']}"
+      )
       local_video_file_path = gcs.download_file_locally(
           video["gcs_uri"], video["local_file_name"]
       )
-      print(f"Downloaded video {video['local_file_name']} to: {local_video_file_path}")
+      print(
+          f"Downloaded video {video['local_file_name']} to:"
+          f" {local_video_file_path}"
+      )
       local_video_file = models.VideoInput(path=local_video_file_path)
 
       gcs_file_name = video["local_file_name"]
@@ -227,8 +233,13 @@ def process_videos_with_overlays_and_text(
           path=f"gs://{gcs_image_overlay_video_path}"
       )
 
-      uploaded_overlay_uri = overlay_image_on_video(local_video_file, images, image_overlay_video)
-      print(f"Image overlay video for '{gcs_file_name}' uploaded to: {uploaded_overlay_uri}")
+      uploaded_overlay_uri = overlay_image_on_video(
+          local_video_file, images, image_overlay_video
+      )
+      print(
+          f"Image overlay video for '{gcs_file_name}' uploaded to:"
+          f" {uploaded_overlay_uri}"
+      )
 
       promo_text = models.TextInput(
           text=video["promo_text"],
