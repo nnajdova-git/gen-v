@@ -100,7 +100,7 @@ def fixture_mock_blob(fs):
   mock_blob.open.return_value.__enter__.return_value.read.return_value = (
       b'This is a test file content.'
   )
-  mock_blob.self_link = 'gs://test-bucket/outputs/gen_video_abc.mp4'
+
   yield mock_blob
 
 
@@ -109,6 +109,17 @@ def fixture_mock_bucket(mock_blob):
   mock_bucket = mock.MagicMock(spec=storage.Bucket)
   mock_bucket.blob.return_value = mock_blob
   mock_bucket.copy_blob.return_value = mock_blob
+
+  def copy_blob(
+      source_blob: storage.Blob,  # pylint: disable=unused-argument
+      bucket: storage.Bucket,  # pylint: disable=unused-argument
+      destination: str,
+  ):
+    mock_blob.generation = '1'
+    mock_blob.id = destination + ':' + mock_blob.generation
+    return mock_blob
+
+  mock_bucket.copy_blob = copy_blob
 
   yield mock_bucket
 
@@ -257,7 +268,7 @@ def test_generate_videos_and_download_success_simple(
   """Tests the simple success path of generate_videos_and_download."""
   output_prefix = 'promo_v1'
   input_image_filename = 'image_dog.png'
-  generated_video_gcs_uri = 'gs://test-bucket/outputs/gen_video_abc.mp4'
+  generated_video_gcs_uri = 'gs://image_dog.png/gen_video_abc.mp4'
   generated_video_filename = 'gen_video_abc.mp4'
 
   mock_img_to_vid.return_value = {
