@@ -368,3 +368,49 @@ def generate_videos_concurrently(
       len(all_generated_videos),
   )
   return all_generated_videos
+
+
+def generate_videos(
+    images_uri: str,
+    output_uri_path: str,
+    resized_image_width: int,
+    resized_image_height: int,
+    original_background_color: models.RGBColor,
+    background_color: models.RGBColor,
+    settings: config.AppSettings,
+) -> list[dict]:
+  """Generates videos from images.
+
+  This function performs the following steps:
+  1. Resizes input images into landscape and portrait formats.
+  2. Recolors the background of the resized images.
+  3. Generates videos (VEOs) from the recolored images.
+
+  Args:
+      images_uri: The GCS URI of the folder containing the input images.
+      output_uri_path: The GCS URI of the folder where output will be stored.
+      resized_image_width: The desired width of the resized images.
+      resized_image_height: The desired height of the resized images.
+      original_background_color: The original background color of the images.
+      background_color: The desired background color of the images.
+      settings: An instance of AppSettings containing configuration, including
+                the derived fetch_endpoint.
+
+  Returns:
+      A list of dictionaries with information about a selected video.
+  """
+  selected_products = utils.process_and_resize_images(
+      images_uri,
+      resized_image_width,
+      resized_image_height,
+      original_background_color,
+      output_uri_path,
+  )
+  utils.recolor_background_and_upload(
+      selected_products,
+      output_uri_path,
+      original_background_color,
+      background_color,
+  )
+  output_video_files = generate_videos_concurrently(selected_products, settings)
+  return output_video_files

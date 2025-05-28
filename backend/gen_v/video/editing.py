@@ -15,16 +15,18 @@
 
 This module provides utilities for manipulating video clips after generation.
 """
-from typing import Any, Callable
-import mediapy
+import concurrent.futures
+import contextlib
 import os
-from PIL import Image
+from typing import Any, Callable
+
 from gen_v import models
 from gen_v import storage as gcs
 from gen_v import utils
+from google.api_core import exceptions as api_core_exceptions
+import mediapy
 import moviepy as mp
-import contextlib
-import concurrent.futures
+from PIL import Image
 
 
 def display_image(
@@ -201,7 +203,9 @@ def process_videos_with_overlays_and_text(
   Returns:
       None.
   """
-  print("process_videos_with_overlays_and_text...")
+  print("Starting process_videos_with_overlays_and_text...")
+  print(f"Intermediate GCS URI: {overlays_uri}")
+  print(f"Final GCS URI: {final_uri}")
 
   def process_video(video: dict[str, str]):
     """Processes a single video by adding overlays and text.
@@ -209,35 +213,50 @@ def process_videos_with_overlays_and_text(
     Args:
       video: A dictionary representing a video
     """
-    print(f"process_video: {video}")
-    local_video_file_path = gcs.download_file_locally(
-        video["gcs_uri"], video["local_file_name"]
-    )
-    local_video_file = models.VideoInput(path=local_video_file_path)
+    print(f"Processing video: {video}")
 
-    gcs_file_name = video["local_file_name"]
-    gcs_image_overlay_video_path = f"{overlays_uri}/{gcs_file_name}"
-    image_overlay_video = models.VideoInput(
-        path=f"gs://{gcs_image_overlay_video_path}"
-    )
+    try:
+      print(f"Downloading video {video.local_file_name} from: {video.gcs_uri}")
+      local_video_file_path = gcs.download_file_locally(
+          video.gcs_uri, video.local_file_name
+      )
+      print(
+          f"Downloaded video {video.local_file_name} to:"
+          f" {local_video_file_path}"
+      )
+      local_video_file = models.VideoInput(path=local_video_file_path)
 
-    overlay_image_on_video(local_video_file, images, image_overlay_video)
+      gcs_file_name = video.local_file_name
+      gcs_image_overlay_video_path = f"{overlays_uri}/{gcs_file_name}"
+      image_overlay_video = models.VideoInput(
+          path=f"gs://{gcs_image_overlay_video_path}"
+      )
 
-    promo_text = models.TextInput(
-        text=video["promo_text"],
-        font=overlay_text.font,
-        font_size=overlay_text.font_size,
-        start_time=overlay_text.start_time,
-        duration=overlay_text.duration,
-        color=overlay_text.color,
-        position=overlay_text.position,
-    )
+      uploaded_overlay_uri = overlay_image_on_video(
+          local_video_file, images, image_overlay_video
+      )
+      print(
+          f"Image overlay video for {gcs_file_name} uploaded to:"
+          f" {uploaded_overlay_uri}"
+      )
 
-    # Define the GCS path for the final video with text overlay.
-    final_video_gcs_path = f"{final_uri}/{gcs_file_name}"
-    final_video = models.VideoInput(path=final_video_gcs_path)
+      promo_text = models.TextInput(
+          text=video.promo_text,
+          font=overlay_text.font,
+          font_size=overlay_text.font_size,
+          start_time=overlay_text.start_time,
+          duration=overlay_text.duration,
+          color=overlay_text.color,
+          position=overlay_text.position,
+      )
 
-    add_text_clips_to_video(image_overlay_video, [promo_text], final_video)
+      # Define the GCS path for the final video with text overlay.
+      final_video_gcs_path = f"{final_uri}/{gcs_file_name}"
+      final_video = models.VideoInput(path=final_video_gcs_path)
+
+      add_text_clips_to_video(image_overlay_video, [promo_text], final_video)
+    except api_core_exceptions.GoogleAPICallError as e:
+      print(f"Error processing video: {video.local_file_name}: {e}")
 
   with concurrent.futures.ThreadPoolExecutor() as executor:
     executor.map(process_video, videos)
