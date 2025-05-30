@@ -92,7 +92,7 @@ class AppSettings(pydantic_settings.BaseSettings):
     """Returns the GCS URI for input images."""
     return (
         f"{self.gcp_bucket_name}/{self.gcs_folder_name}/"
-        f"input-images/"{utils.get_current_week_year_str()}"
+        f"input-images/{utils.get_current_week_year_str()}"
     )
 
   @pydantic.computed_field(return_type=str)
