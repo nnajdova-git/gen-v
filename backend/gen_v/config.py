@@ -18,7 +18,6 @@ from environment variables or using sensible defaults. It centralizes
 configuration related to Google Cloud Platform resources, storage paths,
 and temporary directories.
 """
-import date
 from typing import Literal
 import pydantic
 import pydantic_settings
