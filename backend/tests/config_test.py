@@ -15,12 +15,8 @@
 from unittest import mock
 
 
-# === GCS URI Tests ===
-
-
 def test_images_uri(mock_app_settings):
   """Tests the images_uri computed field."""
-  # We mock the date utility to ensure the test is deterministic.
   with mock.patch(
       'gen_v.utils.get_current_week_year_str', return_value='week22-2025'
   ):
@@ -44,9 +40,6 @@ def test_veo_output_gcs_uri_base(mock_app_settings):
   """Tests the veo_output_gcs_uri_base computed field."""
   expected_uri = 'gs://my-bucket/my-folder/output-videos/veo/'
   assert mock_app_settings.veo_output_gcs_uri_base == expected_uri
-
-
-# === API Endpoint and Model URI Tests ===
 
 
 def test_video_model_uri(mock_app_settings):
@@ -74,12 +67,8 @@ def test_fetch_endpoint(mock_app_settings):
   assert mock_app_settings.fetch_endpoint == expected_endpoint
 
 
-# === Conditional Logic Tests ===
-
-
 def test_selected_prompt_text_custom(mock_app_settings):
   """Tests selected_prompt_text returns the custom prompt."""
-  # The default prompt_type is 'CUSTOM', so no change is needed.
   settings = mock_app_settings
   assert settings.selected_prompt_text == settings.custom_video_prompt
 
@@ -87,13 +76,12 @@ def test_selected_prompt_text_custom(mock_app_settings):
 def test_selected_prompt_text_gemini(mock_app_settings):
   """Tests selected_prompt_text returns the Gemini prompt."""
   settings = mock_app_settings
-  settings.prompt_type = 'GEMINI'  # Override the setting for this test
+  settings.prompt_type = 'GEMINI'
   assert settings.selected_prompt_text == settings.gemini_base_prompt
 
 
 def test_aspect_ratio_landscape(mock_app_settings):
   """Tests aspect_ratio returns '16:9' for LANDSCAPE."""
-  # The default video_orientation is 'LANDSCAPE'.
   settings = mock_app_settings
   assert settings.aspect_ratio == '16:9'
 
@@ -101,13 +89,12 @@ def test_aspect_ratio_landscape(mock_app_settings):
 def test_aspect_ratio_portrait(mock_app_settings):
   """Tests aspect_ratio returns '9:16' for PORTRAIT."""
   settings = mock_app_settings
-  settings.video_orientation = 'PORTRAIT'  # Override the setting
+  settings.video_orientation = 'PORTRAIT'
   assert settings.aspect_ratio == '9:16'
 
 
 def test_output_file_prefix_landscape(mock_app_settings):
   """Tests output_file_prefix returns correctly for LANDSCAPE."""
-  # The default video_orientation is 'LANDSCAPE'.
   settings = mock_app_settings
   assert settings.output_file_prefix == 'video-landscape'
 
@@ -115,5 +102,5 @@ def test_output_file_prefix_landscape(mock_app_settings):
 def test_output_file_prefix_portrait(mock_app_settings):
   """Tests output_file_prefix returns correctly for PORTRAIT."""
   settings = mock_app_settings
-  settings.video_orientation = 'PORTRAIT'  # Override the setting
+  settings.video_orientation = 'PORTRAIT'
   assert settings.output_file_prefix == 'video-portrait'
