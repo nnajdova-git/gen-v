@@ -25,6 +25,7 @@ import pydantic_settings
 
 from gen_v import utils
 
+
 class AppSettings(pydantic_settings.BaseSettings):
   """The settings used in the application.
 
@@ -99,19 +100,13 @@ class AppSettings(pydantic_settings.BaseSettings):
   @property
   def intros_outros_uri(self) -> str:
     """Returns the GCS URI for intros and outros."""
-    return (
-        f"{self.gcp_bucket_name}/"
-        f"{self.gcs_folder_name}/input-videos/"
-    )
+    return f"{self.gcp_bucket_name}/{self.gcs_folder_name}/input-videos/"
 
   @pydantic.computed_field(return_type=str)
   @property
   def audio_uri(self) -> str:
     """Returns the GCS URI for audio files."""
-    return (
-        f"{self.gcp_bucket_name}/"
-        f"{self.gcs_folder_name}/audio/"
-    )
+    return f"{self.gcp_bucket_name}/{self.gcs_folder_name}/audio/"
 
   @pydantic.computed_field(return_type=str)
   @property
