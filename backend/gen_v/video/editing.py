@@ -216,18 +216,16 @@ def process_videos_with_overlays_and_text(
     print(f"Processing video: {video}")
 
     try:
-      local_file_name = video.get("local_file_name")
+      file_name = video.get("local_file_name")
       gcs_uri = video.get("gcs_uri")
 
-      print(f"Downloading video {local_file_name} from: {gcs_uri}")
-      local_video_file_path = gcs.download_file_locally(
-          gcs_uri, local_file_name
-      )
-      print(f"Downloaded video {local_file_name} to: {local_video_file_path}")
+      print(f"Downloading video {file_name} from: {gcs_uri}")
+      local_video_file_path = gcs.download_file_locally(gcs_uri, file_name)
+      print(f"Downloaded video {file_name} to: {local_video_file_path}")
 
       local_video_file = models.VideoInput(path=local_video_file_path)
 
-      gcs_image_overlay_video_path = f"{overlays_uri}/{local_file_name}"
+      gcs_image_overlay_video_path = f"{overlays_uri}/{file_name}"
       image_overlay_video = models.VideoInput(
           path=f"gs://{gcs_image_overlay_video_path}"
       )
@@ -236,7 +234,7 @@ def process_videos_with_overlays_and_text(
           local_video_file, images, image_overlay_video
       )
       print(
-          f"Image overlay video for '{local_file_name}' uploaded to:"
+          f"Image overlay video for '{file_name}' uploaded to:"
           f" {uploaded_overlay_uri}"
       )
 
@@ -251,12 +249,12 @@ def process_videos_with_overlays_and_text(
       )
 
       # Define the GCS path for the final video with text overlay.
-      final_video_gcs_path = f"{final_uri}/{local_file_name}"
+      final_video_gcs_path = f"{final_uri}/{file_name}"
       final_video = models.VideoInput(path=final_video_gcs_path)
 
       add_text_clips_to_video(image_overlay_video, [promo_text], final_video)
     except api_core_exceptions.GoogleAPICallError as e:
-      print(f"Error processing video: {video.local_file_name}: {e}")
+      print(f"Error processing video: {file_name}: {e}")
 
   with concurrent.futures.ThreadPoolExecutor() as executor:
     executor.map(process_video, videos)
