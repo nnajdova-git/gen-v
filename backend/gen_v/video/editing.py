@@ -214,8 +214,9 @@ def process_videos_with_overlays_and_text(
       video: A dictionary representing a video
     """
     print(f"Processing video: {video}")
-
+    print("Before try block")
     try:
+      print("Inside the try block")
       print(f"Downloading video {video.local_file_name} from: {video.gcs_uri}")
       local_video_file_path = gcs.download_file_locally(
           video.gcs_uri, video.local_file_name
