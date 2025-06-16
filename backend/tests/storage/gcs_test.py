@@ -67,7 +67,6 @@ def fixture_mock_bucket(mock_blob):
       destination: str,
   ):
     mock_blob.generation = '1'
-    # cse-gen-v/dseaton/input-images/week25-2025/input1.png/1750063794932034
     mock_blob.id = 'bucket_name/' + destination + '/' + mock_blob.generation
     return mock_blob
 
