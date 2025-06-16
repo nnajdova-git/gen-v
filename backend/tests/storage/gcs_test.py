@@ -67,7 +67,8 @@ def fixture_mock_bucket(mock_blob):
       destination: str,
   ):
     mock_blob.generation = '1'
-    mock_blob.id = '/' + destination + ':' + mock_blob.generation
+    # cse-gen-v/dseaton/input-images/week25-2025/input1.png/1750063794932034
+    mock_blob.id = 'bucket_name/' + destination + '/' + mock_blob.generation
     return mock_blob
 
   mock_bucket.copy_blob = copy_blob
@@ -151,10 +152,11 @@ def test_move_blob(mock_storage_client):
   )
   dest_folder = 'destination_folder'
 
-  expected_destination = 'gs://existing_folder/destination_folder/filename.mp4'
+  expected_destination = 'gs://bucket_name/existing_folder/destination_folder/filename.mp4'
 
   new_link = gcs.move_blob(
       source_guri, dest_folder, storage_client=mock_storage_client
   )
+  print(f"result: {new_link}")
 
   assert new_link == expected_destination

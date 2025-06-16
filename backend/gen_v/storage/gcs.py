@@ -229,4 +229,5 @@ def move_blob(
   new_blob = bucket.copy_blob(source_blob, bucket, destination)
   source_blob.delete()
 
-  return "gs:/" + new_blob.id[: -(len(str(new_blob.generation)) + 1)]
+  # return new_blob.id
+  return "gs://" + new_blob.id[: -(len(str(new_blob.generation)) + 1)]
