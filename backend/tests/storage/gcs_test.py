@@ -152,11 +152,13 @@ def test_move_blob(mock_storage_client):
   )
   dest_folder = 'destination_folder'
 
-  expected_destination = 'gs://bucket_name/existing_folder/destination_folder/filename.mp4'
+  expected_destination = (
+      'gs://bucket_name/existing_folder/destination_folder/filename.mp4'
+  )
 
   new_link = gcs.move_blob(
       source_guri, dest_folder, storage_client=mock_storage_client
   )
-  print(f"result: {new_link}")
+  print(f'result: {new_link}')
 
   assert new_link == expected_destination
